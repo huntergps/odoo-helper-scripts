@@ -1127,7 +1127,7 @@ function install_entry_point {
         case $key in
             pre-requirements)
                 shift
-                install_pre_requirements "$@";
+                install_system_prerequirements "$@";
                 return 0;
             ;;
             sys-deps)
