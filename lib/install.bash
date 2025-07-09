@@ -201,21 +201,33 @@ function install_wkhtmltopdf {
         shift
     done
     if ! check_command wkhtmltopdf > /dev/null || [ -n "$force_install" ]; then
-        # if wkhtmltox is not installed yet
+        echoe -e "${BLUEC}Instalando ${YELLOWC}wkhtmltopdf${BLUEC}...${NC}";
+        
+        # URL actualizada para Ubuntu 22.04 (jammy)
+        local WKHTMLTOX_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb";
         local wkhtmltox_path=${DOWNLOADS_DIR:-/tmp}/wkhtmltox.deb;
-        if [ ! -f "$wkhtmltox_path" ]; then
-            echoe -e "${BLUEC}Downloading ${YELLOWC}wkhtmltopdf${BLUEC}...${NC}";
-            install_wkhtmltopdf_download "$wkhtmltox_path";
+        
+        # Instalar dependencias necesarias
+        install_sys_deps_internal xfonts-75dpi xfonts-base;
+        
+        # Descargar wkhtmltopdf
+        if ! wget -q "$WKHTMLTOX_URL" -O "$wkhtmltox_path"; then
+            echoe -e "${REDC}ERROR:${NC} Cannot download ${BLUEC}wkhtmltopdf${NC}!";
+            return 1;
         fi
-        echoe -e "${BLUEC}Installing ${YELLOWC}wkhtmltopdf${BLUEC}...${NC}";
-        local wkhtmltox_deps;
-        read -ra wkhtmltox_deps < <(dpkg -f "$wkhtmltox_path" Depends | sed -r 's/,//g');
-        if ! (install_sys_deps_internal "${wkhtmltox_deps[@]}" && with_sudo dpkg -i "$wkhtmltox_path"); then
-            echoe -e "${REDC}ERROR:${NC} Error caught while installing ${BLUEC}wkhtmltopdf${NC}.";
+        
+        # Instalar el paquete
+        if ! with_sudo dpkg -i "$wkhtmltox_path"; then
+            with_sudo apt-get install -f -y;
         fi
-
-        rm "$wkhtmltox_path" || true;  # try to remove downloaded file, ignore errors
-
+        
+        # Crear enlaces simbólicos
+        with_sudo ln -sf /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf;
+        with_sudo ln -sf /usr/local/bin/wkhtmltoimage /usr/bin/wkhtmltoimage;
+        
+        # Limpiar archivo descargado
+        rm "$wkhtmltox_path" || true;
+        
         echoe -e "${GREENC}OK${NC}:${YELLOWC}wkhtmltopdf${NC} installed successfully!";
     else
         echoe -e "${GREENC}OK${NC}:${YELLOWC}wkhtmltopdf${NC} seems to be installed!";
