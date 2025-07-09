@@ -58,6 +58,12 @@ This project aims to simplify development process of Odoo addons as much as poss
     - *11.0*
     - *12.0*
     - *13.0* (requires ubuntu 18.04+ or other linux distribution with python 3.6+)
+    - *14.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *15.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *16.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *17.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *18.0* (requires ubuntu 20.04+ or other linux distribution with python 3.10+)
+    - *18.3* (requires ubuntu 22.04+ or other linux distribution with python 3.10+)
 - OS support:
     - On *Ubuntu* should work nice
     - Also should work on *Debian* based systems, but some troubles may happen with installation of system dependencies.

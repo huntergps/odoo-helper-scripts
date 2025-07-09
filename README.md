@@ -57,6 +57,12 @@ The canonical source of odoo-helper-scripts is hosted on [GitLab](https://gitlab
     - *11.0*
     - *12.0*
     - *13.0* (requires ubuntu 18.04+ or other linux distribution with python 3.6+)
+    - *14.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *15.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *16.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *17.0* (requires ubuntu 18.04+ or other linux distribution with python 3.8+)
+    - *18.0* (requires ubuntu 20.04+ or other linux distribution with python 3.10+)
+    - *18.3* (requires ubuntu 22.04+ or other linux distribution with python 3.10+)
 - OS support:
     - On *Ubuntu* should work nice
     - Also should work on *Debian* based systems, but some troubles may happen with installation of system dependencies.
@@ -101,6 +107,9 @@ wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-sys
 # Install system dependencies required for odoo-helper-scripts
 # NOTE: Works only on debian-based systems
 odoo-helper install pre-requirements
+
+# Install Odoo 18.3
+odoo-install --odoo-version 18.3 --local-postgres --local-nginx
 ```
 
 or more explicit way:

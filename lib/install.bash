@@ -29,7 +29,7 @@ DEFAULT_ODOO_REPO="https://github.com/odoo/odoo.git";
 # Set-up defaul values for environment variables
 function install_preconfigure_env {
     ODOO_REPO=${ODOO_REPO:-$DEFAULT_ODOO_REPO};
-    ODOO_VERSION=${ODOO_VERSION:-12.0};
+    ODOO_VERSION=${ODOO_VERSION:-18.3};
     ODOO_BRANCH=${ODOO_BRANCH:-$ODOO_VERSION};
     DOWNLOAD_ARCHIVE=${ODOO_DOWNLOAD_ARCHIVE:-${DOWNLOAD_ARCHIVE:-on}};
     CLONE_SINGLE_BRANCH=${CLONE_SINGLE_BRANCH:-on};
@@ -478,8 +478,15 @@ function install_odoo_py_requirements_for_version {
                     echo "gevent==1.1.2";
                 elif exec_py -c "\"import sys; assert (3, 4) <= sys.version_info < (3, 8);\"" > /dev/null 2>&1; then
                     echo "gevent==1.3.4";
+                elif exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.8-3.10 support
+                    echo "gevent==22.10.2";
+                elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
+                    # Python 3.11+ support for Odoo 18.3
+                    echo "gevent==23.9.1";
                 else
-                    echo "$dependency";
+                    # Python 3.12+ support for future Odoo versions
+                    echo "gevent==23.9.1";
                 fi
             elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
                 echo "greenlet==0.4.9";

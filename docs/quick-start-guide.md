@@ -32,11 +32,11 @@ It installs dependencies of *odoo-helper-scripts* itself and common odoo depende
 odoo-helper install pre-requirements
 ```
 
-Install system dependencies for specific Odoo version (in this example *11.0*)
+Install system dependencies for specific Odoo version (in this example *18.3*)
 Note, that this option requires *sudo*.
 
 ```bash
-odoo-helper install sys-deps 11.0;
+odoo-helper install sys-deps 18.3;
 ```
 
 Install [PostgreSQL Server](https://www.postgresql.org/) and create
@@ -49,10 +49,10 @@ odoo-helper install postgres odoo odoo
 
 ## Install Odoo
 
-Install *Odoo* 11.0 into *odoo-11.0* directory
+Install *Odoo* 18.3 into *odoo-18.3* directory
 
 ```bash
-odoo-install -i odoo-11.0 --odoo-version 11.0
+odoo-install -i odoo-18.3 --odoo-version 18.3
 ```
 
 ## Manage installed Odoo
@@ -61,10 +61,10 @@ Change directory to that one contains just installed Odoo instance.
 This is required to make instance-management commands work.
 
 ```bash
-cd odoo-11.0
+cd odoo-18.3
 ```
 
-Now You have *Odoo 11.0* installed in this directory.
+Now You have *Odoo 18.3* installed in this directory.
 Note, that this odoo installation uses [virtualenv](https://virtualenv.pypa.io/en/stable/)
 (`venv` directory)
 Also you will find there `odoo-helper.conf` config file
@@ -232,23 +232,23 @@ go back to directory containing your projects (that one, where `odoo-11.0` proje
 cd ../../
 ```
 
-Let's install *Odoo* of version 12.0 here too.
-First, install *system dependencies* for *Odoo* version 12.0
+Let's install *Odoo* of version 18.3 here too.
+First, install *system dependencies* for *Odoo* version 18.3
 
 ```bash
-odoo-helper install sys-deps 12.0;
+odoo-helper install sys-deps 18.3;
 ```
 
 And when system dependencies installed, install *Odoo* itself
 
 ```bash
-odoo-install --install-dir odoo-12.0 --odoo-version 12.0
-cd odoo-12.0
+odoo-install --install-dir odoo-18.3 --odoo-version 18.3
+cd odoo-18.3
 ```
 
-and, for example,  install there [partner-contact/base_location](https://github.com/OCA/partner-contact/tree/12.0/base_location) addon 
+and, for example,  install there [partner-contact/base_location](https://github.com/OCA/partner-contact/tree/18.3/base_location) addon 
 from [partner-contact](https://github.com/OCA/partner-contact) [Odoo Community Association](https://odoo-community.org/) repository
-Note that *odoo-helper* script will automaticaly fetch branch named as server version in current install (in this case *12.0*),
+Note that *odoo-helper* script will automaticaly fetch branch named as server version in current install (in this case *18.3*),
 if another branch was not specified
 
 ```bash
