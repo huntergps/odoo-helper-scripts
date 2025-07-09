@@ -1,99 +1,99 @@
-# Quick Start Guide
+# Guía de Inicio Rápido
 
-This is quick start guide for *odoo-helper-scripts*.
+Esta es la guía de inicio rápido para *odoo-helper-scripts*.
 
-## Install odoo-helper scripts
+## Instalar scripts odoo-helper
 
-For full list of installation options look at [installation documentation](./installation.md)
+Para lista completa de opciones de instalación mira la [documentación de instalación](./installation.md)
 
-To install *odoo-helper-scripts* system-wide do folowing:
+Para instalar *odoo-helper-scripts* a nivel del sistema haz lo siguiente:
 
 ```bash
 wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 ```
 
-or more explicit way:
+o de forma más explícita:
 
 ```bash
-# Download installation script
+# Descargar script de instalación
 wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
 
-# Install odoo-helper-scripts
+# Instalar odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;
 ```
 
-## Install dependencies
+## Instalar dependencias
 
-Ensure *odoo-helper-scripts* pre-requirements are installed
-This step should be usualy ran one time.
-It installs dependencies of *odoo-helper-scripts* itself and common odoo dependencies.
+Asegúrate de que los pre-requisitos de *odoo-helper-scripts* estén instalados
+Este paso usualmente debe ejecutarse una vez.
+Instala dependencias de *odoo-helper-scripts* en sí y dependencias comunes de odoo.
 
 ```bash
 odoo-helper install pre-requirements
 ```
 
-Install system dependencies for specific Odoo version (in this example *18.3*)
-Note, that this option requires *sudo*.
+Instalar dependencias del sistema para versión específica de Odoo (en este ejemplo *18.3*)
+Nota, que esta opción requiere *sudo*.
 
 ```bash
 odoo-helper install sys-deps 18.3;
 ```
 
-Install [PostgreSQL Server](https://www.postgresql.org/) and create
-postgres user for Odoo with `name='odoo'` and `password='odoo'`.
-First argument is postgres user name and second is password.
+Instalar [Servidor PostgreSQL](https://www.postgresql.org/) y crear
+usuario postgres para Odoo con `name='odoo'` y `password='odoo'`.
+El primer argumento es nombre de usuario postgres y el segundo es contraseña.
 
 ```bash
 odoo-helper install postgres odoo odoo
 ```
 
-## Install Odoo
+## Instalar Odoo
 
-Install *Odoo* 18.3 into *odoo-18.3* directory
+Instalar *Odoo* 18.3 en directorio *odoo-18.3*
 
 ```bash
 odoo-install -i odoo-18.3 --odoo-version 18.3
 ```
 
-## Manage installed Odoo
+## Gestionar Odoo instalado
 
-Change directory to that one contains just installed Odoo instance.
-This is required to make instance-management commands work.
+Cambiar directorio al que contiene la instancia de Odoo recién instalada.
+Esto es requerido para hacer que funcionen los comandos de gestión de instancia.
 
 ```bash
 cd odoo-18.3
 ```
 
-Now You have *Odoo 18.3* installed in this directory.
-Note, that this odoo installation uses [virtualenv](https://virtualenv.pypa.io/en/stable/)
-(`venv` directory)
-Also you will find there `odoo-helper.conf` config file
+Ahora tienes *Odoo 18.3* instalado en este directorio.
+Nota, que esta instalación de odoo usa [virtualenv](https://virtualenv.pypa.io/en/stable/)
+(directorio `venv`)
+También encontrarás ahí el archivo de configuración `odoo-helper.conf`
 
-So now You can run local odoo server (i.e `openerp-server` or `odoo.py` or `odoo-bin` script).
-Note that this command run's server in foreground.
-Configuration file `conf/odoo.conf` will be automatically used
+Así que ahora puedes ejecutar servidor odoo local (es decir script `openerp-server` o `odoo.py` o `odoo-bin`).
+Nota que este comando ejecuta el servidor en primer plano.
+El archivo de configuración `conf/odoo.conf` se usará automáticamente
 
 ```bash
 odoo-helper server run
 ```
 
-Press `Ctrl+C` to stop the server
+Presiona `Ctrl+C` para detener el servidor
 
-To run server in backgroud use following command:
+Para ejecutar servidor en segundo plano usa el siguiente comando:
 
 ```bash
 odoo-helper server start
 ```
 
-Run command below to open current odoo isntance in browser:
+Ejecuta el comando de abajo para abrir la instancia actual de odoo en el navegador:
 
 ```bash
 odoo-helper browse
 ```
 
-By default Odoo service will be accessible on [localhost:8069](http://localhost:8069/)
+Por defecto el servicio Odoo será accesible en [localhost:8069](http://localhost:8069/)
 
-There are also additional server related commands (see [Frequently Used Commands](./frequently-used-commands.md)):
+También hay comandos adicionales relacionados con el servidor (ver [Comandos Frecuentemente Usados](./frequently-used-commands.md)):
 
 ```bash
 odoo-helper server status
@@ -103,7 +103,7 @@ odoo-helper server restart
 odoo-helper server stop
 ```
 
-Also there are shourtcuts for these commands
+También hay atajos para estos comandos
 
 ```bash
 odoo-helper status
@@ -113,163 +113,88 @@ odoo-helper stop
 ```
 
 
-## Create database with demo-data
+## Crear base de datos con datos de demostración
 
-To create Odoo database with demo data run following command
+Para crear base de datos de Odoo con datos de demostración ejecuta el siguiente comando
 
 ```bash
 odoo-helper db create --demo my-database
 ```
 
-Then start Odoo server (if it wasn't started yet)
+Luego inicia el servidor Odoo (si no se había iniciado aún)
 
 ```bash
 odoo-helper start
 ```
 
-And login to just created database with following default credentials:
+Y inicia sesión en la base de datos recién creada con las siguientes credenciales por defecto:
 
 - login: admin
 - password: admin
 
 
-## Fetch and install Odoo addons
+## Obtener e instalar complementos de Odoo
 
-Let's fetch modules from [OCA repository contract](https://github.com/OCA/contract)
-Branch will be detected automatically by *odoo-helper-scripts*
+Vamos a obtener módulos del [repositorio OCA contract](https://github.com/OCA/contract)
+La rama será detectada automáticamente por *odoo-helper-scripts*
 
 ```bash
 odoo-helper fetch --oca contract
 ```
 
-Or alternatively
+O alternativamente
 
 ```bash
 odoo-helper fetch --github OCA/contract --branch 11.0
 ```
 
-If repository have standard branch structure branches have same names as Odoo versions (series)
-then odoo-helper will automatically try to switch to right branch,
-thus it is not required to specify branch name in this case.
-So command above may look like:
+Si el repositorio tiene estructura de rama estándar las ramas tienen los mismos nombres que las versiones de Odoo (series)
+entonces odoo-helper automáticamente intentará cambiar a la rama correcta,
+así que no es requerido especificar nombre de rama en este caso.
+Así que el comando de arriba puede verse como:
 
 ```bash
 odoo-helper fetch --github OCA/contract
 ```
 
-Now look at `custom_addons/` directory, there will be placed links to addons
-from [OCA repository 'contract'](https://github.com/OCA/contract)
-But repository itself is placed in `repositories/` directory
+Ahora mira el directorio `custom_addons/`, ahí se colocarán enlaces a complementos
+del [repositorio OCA 'contract'](https://github.com/OCA/contract)
+Pero el repositorio en sí está colocado en el directorio `repositories/`
 
-At this point fetched addons are not shown in *Apps* Odoo menu.
-That's why we have to update addons list in database.
-This can be done by Odoo UI in developer mode (*Apps / Update Applications List*)
-or  th a simple shell command:
+En este punto los complementos obtenidos no se muestran en el menú *Apps* de Odoo.
+Por eso tenemos que actualizar la lista de complementos en la base de datos.
+Esto se puede hacer por la UI de Odoo en modo desarrollador (*Apps / Update Applications List*)
+o con un simple comando de shell:
 
 ```bash
 odoo-helper addons update-list
 ```
 
-Now addons are present in Odoo's database, so they could be installed via UI (*Apps* menu)
-Also it is possible to do this via command line with following command:
+Ahora los complementos están presentes en la base de datos de Odoo, así que pueden instalarse vía UI (menú *Apps*)
+También es posible hacer esto vía línea de comandos con el siguiente comando:
 
 ```bash
 odoo-helper addons install [-d database] <addon name>
 ```
 
-For example following command will install [contract](https://github.com/OCA/contract/tree/11.0/contract) addon
+Por ejemplo el siguiente comando instalará el complemento [contract](https://github.com/OCA/contract/tree/11.0/contract)
 
 ```bash
 odoo-helper addons install -d my-database contract
 ```
 
-Also if database is not specified addon will be installed to all vaiablable databases
+También si la base de datos no está especificada el complemento se instalará en todas las bases de datos disponibles
 
 
-## Run tests
+## Ejecutar tests
 
-Now let's run tests for these just installed modules
+Ahora vamos a ejecutar tests para estos módulos recién instalados
 
 ```bash
 odoo-helper test --create-test-db -m contract
 ```
 
-This will create *test database* (it will be dropt after tests finished) and 
-run tests for `contract` module
+Esto creará *base de datos de test* (será eliminada después de que terminen los tests) y 
+ejecutará tests para el módulo `contract`
 
-Or we can run tests for all addons in specified directory, *odoo-helper-scripts*
-will automaticaly detect installable addons and run test for them
-
-```bash
-odoo-helper test --dir ./repositories/contract
-```
-
-This will use standard test database, that will not be dropt after tests,
-so we do not need to recreate database on each test run, which saves time.
-
-If you need color output from Odoo, you may use `--use-unbuffer` option,
-but it depends on `unbuffer` program that could be found in `expect-dev` package.
-
-```bash
-odoo-helper --use-unbuffer test -m contract
-```
-
-The one cool thing of *odoo-helper-scripts*, you may not remeber paths to odoo instalation directory,
-and if you change directory to another inside your *Odoo* project, everything will continue to work.
-
-```bash
-cd custom_addons
-odoo-helper server status
-dooo-helper server restart
-```
-
-## One more Odoo install
-
-So... let's install one more Odoo version
-go back to directory containing your projects (that one, where `odoo-11.0` project is placed in)
-
-```bash
-cd ../../
-```
-
-Let's install *Odoo* of version 18.3 here too.
-First, install *system dependencies* for *Odoo* version 18.3
-
-```bash
-odoo-helper install sys-deps 18.3;
-```
-
-And when system dependencies installed, install *Odoo* itself
-
-```bash
-odoo-install --install-dir odoo-18.3 --odoo-version 18.3
-cd odoo-18.3
-```
-
-and, for example,  install there [partner-contact/base_location](https://github.com/OCA/partner-contact/tree/18.3/base_location) addon 
-from [partner-contact](https://github.com/OCA/partner-contact) [Odoo Community Association](https://odoo-community.org/) repository
-Note that *odoo-helper* script will automaticaly fetch branch named as server version in current install (in this case *18.3*),
-if another branch was not specified
-
-```bash
-odoo-helper fetch --oca partner-contact -m base_location
-```
-
-and run tests for it
-
-```bash
-odoo-helper test --create-test-db -m base_location
-```
-
-Also if you want to install python packages in current installation environment,
-*odoo-helper* provides *pip alias* to *pip* installed in virtualenv of Odoo instance
-
-```bash
-odoo-helper pip install phonenumbers
-```
-
-## More
-
-*odoo-helper-scripts* has much more features.
-
-Look at [Frequently Used Commands](./frequently-used-commands.md) to gen more info.
+O podemos ejecutar tests para todos los complementos en directorio especificado, *odoo-helper-scripts*

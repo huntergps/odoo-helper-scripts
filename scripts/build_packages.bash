@@ -18,7 +18,7 @@ deb_version=${deb_version#v}
 
 deb_depends="git wget lsb-release 
     procps libevent-dev g++ libpq-dev libsass-dev
-    python-dev python3-dev libjpeg-dev libyaml-dev
+    python3-dev libjpeg-dev libyaml-dev
     libfreetype6-dev zlib1g-dev libxml2-dev libxslt-dev bzip2
     libsasl2-dev libldap2-dev libssl-dev libffi-dev fontconfig";
 deb_depends_opt=$(for dep in $deb_depends; do echo "--depends $dep"; done);

@@ -1,68 +1,68 @@
-## Frequently used command
+## Comandos frecuentemente usados
 
-Brief list of frequently used odoo-helper commands
+Lista breve de comandos odoo-helper frecuentemente usados
 
-### Odoo server management
-- `odoo-helper start` - start odoo server
-- `odoo-helper restart` - restart odoo server
-- `odoo-helper stop` - stop odoo-helper server
-- `odoo-helper log` - see odoo server logs
-- `odoo-helper ps` - display odoo server processes for current project
-- `odoo-helper browse` - open running odoo installation in browser
+### Gestión del servidor Odoo
+- `odoo-helper start` - iniciar servidor odoo
+- `odoo-helper restart` - reiniciar servidor odoo
+- `odoo-helper stop` - detener servidor odoo-helper
+- `odoo-helper log` - ver logs del servidor odoo
+- `odoo-helper ps` - mostrar procesos del servidor odoo para el proyecto actual
+- `odoo-helper browse` - abrir instalación de odoo ejecutándose en el navegador
 
-### Odoo addons management
-- `odoo-helper addons list <path>` - list odoo addons in specified directory
-- `odoo-helper addons update-list` - update list of available addons in all databases available for this server
-- `odoo-helper addons install <addon1> [addonn]` - install specified odoo addons for all databases available for this server
-- `odoo-helper addons update <addon1> [addonn]` - update specified odoo addons for all databases available for this server
-- `odoo-helper addons uninstall <addon1> [addonn]` - uninstall specified odoo addons for all databases available for this server
-- `odoo-helper addons update --dir <path>` - find all installable addons in specified directory and update them
-- `odoo-helper addons install --dir <path>` - find all installable addons in specified directory and install them
+### Gestión de complementos de Odoo
+- `odoo-helper addons list <path>` - listar complementos de odoo en el directorio especificado
+- `odoo-helper addons update-list` - actualizar lista de complementos disponibles en todas las bases de datos disponibles para este servidor
+- `odoo-helper addons install <addon1> [addonn]` - instalar complementos de odoo especificados para todas las bases de datos disponibles para este servidor
+- `odoo-helper addons update <addon1> [addonn]` - actualizar complementos de odoo especificados para todas las bases de datos disponibles para este servidor
+- `odoo-helper addons uninstall <addon1> [addonn]` - desinstalar complementos de odoo especificados para todas las bases de datos disponibles para este servidor
+- `odoo-helper addons update --dir <path>` - encontrar todos los complementos instalables en el directorio especificado y actualizarlos
+- `odoo-helper addons install --dir <path>` - encontrar todos los complementos instalables en el directorio especificado e instalarlos
 
-### Postgres related
-- `odoo-helper postgres psql [-d database]` - connect to db via psql (same credentials as used by odoo server)
-- `odoo-helper psql [-d database]` - shortcut for `odoo-helper postgres psql` command
-- `sudo odoo-helper postgres user-create <user name> <password>` - create postgres user for odoo
-- `odoo-helper postgres stat-activity` - list running postgres queries
-- `odoo-helper postgres stat-connections` - show postgres connections statistics
+### Relacionado con Postgres
+- `odoo-helper postgres psql [-d database]` - conectarse a la db vía psql (mismas credenciales que usa el servidor odoo)
+- `odoo-helper psql [-d database]` - atajo para el comando `odoo-helper postgres psql`
+- `sudo odoo-helper postgres user-create <user name> <password>` - crear usuario postgres para odoo
+- `odoo-helper postgres stat-activity` - listar consultas postgres ejecutándose
+- `odoo-helper postgres stat-connections` - mostrar estadísticas de conexiones postgres
 
-### Tests
-- `odoo-helper test -m <module>` - test single module
-- `odoo-helper test --dir .` - test all installable addons in current directory
-- `odoo-helper test --coverage-html -m <module>` - test single module and create html coverage report in current dir
-- `odoo-helper test --coverage-html --dir .` - test all installable addons in current directory and create html coverage report in current dir
-- `odoo-helper test -m <module> --recreate-db` - test single module, but recreate test database first
-- `odoo-helper test -m <module> --create-test-db` - test single module on just created clean database. database dropt after tests
+### Pruebas
+- `odoo-helper test -m <module>` - probar módulo único
+- `odoo-helper test --dir .` - probar todos los complementos instalables en el directorio actual
+- `odoo-helper test --coverage-html -m <module>` - probar módulo único y crear reporte de cobertura html en el directorio actual
+- `odoo-helper test --coverage-html --dir .` - probar todos los complementos instalables en el directorio actual y crear reporte de cobertura html en el directorio actual
+- `odoo-helper test -m <module> --recreate-db` - probar módulo único, pero recrear base de datos de prueba primero
+- `odoo-helper test -m <module> --create-test-db` - probar módulo único en base de datos limpia recién creada. base de datos eliminada después de las pruebas
 
 ### Linters
-- `odoo-helper lint pylint .` - run [pylint](https://www.pylint.org/) with [pylint\_odoo](https://pypi.org/project/pylint-odoo/) for all addons in current directory
-- `odoo-helper lint flake8 .` - run [flake8](http://flake8.pycqa.org/en/latest/) for all addons in current directory
-- `odoo-helper lint style .` - run [stylelint](https://stylelint.io/) for all addons in current directories
-- `odoo-helper pylint` - alias for `odoo-helper lint pylint`
-- `odoo-helper flake8` - alias for `odoo-helper lint flake8`
-- `odoo-helper style` - alias for odoo-helper lint style`
+- `odoo-helper lint pylint .` - ejecutar [pylint](https://www.pylint.org/) con [pylint\_odoo](https://pypi.org/project/pylint-odoo/) para todos los complementos en el directorio actual
+- `odoo-helper lint flake8 .` - ejecutar [flake8](http://flake8.pycqa.org/en/latest/) para todos los complementos en el directorio actual
+- `odoo-helper lint style .` - ejecutar [stylelint](https://stylelint.io/) para todos los complementos en los directorios actuales
+- `odoo-helper pylint` - alias para `odoo-helper lint pylint`
+- `odoo-helper flake8` - alias para `odoo-helper lint flake8`
+- `odoo-helper style` - alias para odoo-helper lint style`
 
-### Fetch addons
-- `odoo-helper link .` - create symlinks for all addons in current directory in `custom_addons` folder to make them visible for odoo
-- `odoo-helper fetch --oca web` - fetch all addons from [OCA](https://odoo-community.org/) repository [web](https://github.com/OCA/web)
-- `odoo-helper fetch --github <username/repository>` - fetch all addons from spcified [github](https://github.com) repository
-- `odoo-helper fetch --repo <repository url> --branch 11.0` - fetch all addons from specified *git* repository
-- `odoo-helper fetch --hg <repository url> --branch 11.0` - fetch all addons from specified *hg* repository
+### Obtener complementos
+- `odoo-helper link .` - crear enlaces simbólicos para todos los complementos en el directorio actual en la carpeta `custom_addons` para hacerlos visibles para odoo
+- `odoo-helper fetch --oca web` - obtener todos los complementos del repositorio [OCA](https://odoo-community.org/) [web](https://github.com/OCA/web)
+- `odoo-helper fetch --github <username/repository>` - obtener todos los complementos del repositorio [github](https://github.com) especificado
+- `odoo-helper fetch --repo <repository url> --branch 11.0` - obtener todos los complementos del repositorio *git* especificado
+- `odoo-helper fetch --hg <repository url> --branch 11.0` - obtener todos los complementos del repositorio *hg* especificado
 
-### Database management
-- `odoo-helper db list` - list all databases available for current odoo instance
-- `odoo-helper db create my_db` - create database
-- `odoo-helper db backup my_db zip` - backup *my\_db* as ZIP archive (with filestore)
-- `odoo-helper db backup my_db sql` - backup *my\_db* as SQL dump only (without filestore)
-- `odoo-helper db drop my_db` - drop database
+### Gestión de base de datos
+- `odoo-helper db list` - listar todas las bases de datos disponibles para la instancia de odoo actual
+- `odoo-helper db create my_db` - crear base de datos
+- `odoo-helper db backup my_db zip` - respaldar *my\_db* como archivo ZIP (con filestore)
+- `odoo-helper db backup my_db sql` - respaldar *my\_db* como dump SQL solo (sin filestore)
+- `odoo-helper db drop my_db` - eliminar base de datos
 
-### Translation management
-- `odoo-helper tr regenerate --lang uk_UA --file uk <addon1> [addon2]...` - regenerate translations for specified language for specified addons
-- `odoo-helper tr regenerate --lang uk_UA --file uk --dir <path>` - regenerate translations for specified language for all installable addon in specified path
-- `odoo-helper tr rate --lang uk_UA <addon1> [addon2]...` - print translation rate for specified addons
-- `odoo-helper tr rate --lang uk_UA --dir <path>` - print translation rate for all installable addons in specified directory
+### Gestión de traducciones
+- `odoo-helper tr regenerate --lang uk_UA --file uk <addon1> [addon2]...` - regenerar traducciones para el idioma especificado para los complementos especificados
+- `odoo-helper tr regenerate --lang uk_UA --file uk --dir <path>` - regenerar traducciones para el idioma especificado para todos los complementos instalables en la ruta especificada
+- `odoo-helper tr rate --lang uk_UA <addon1> [addon2]...` - imprimir tasa de traducción para los complementos especificados
+- `odoo-helper tr rate --lang uk_UA --dir <path>` - imprimir tasa de traducción para todos los complementos instalables en el directorio especificado
 
-### Other
-- `odoo-helper pip` - run [pip](https://pypi.org/project/pip/) inside current project's virtual environment [virtualenv](https://virtualenv.pypa.io/en/stable/).
-- `odoo-helper npm` - run [npm](https://www.npmjs.com/) inside current project's virtual environment [nodeenv](https://pypi.python.org/pypi/nodeenv)
-- `odoo-helper exec my-command` - run command inside project's virtual env
+### Otros
+- `odoo-helper pip` - ejecutar [pip](https://pypi.org/project/pip/) dentro del entorno virtual [virtualenv](https://virtualenv.pypa.io/en/stable/) del proyecto actual.
+- `odoo-helper npm` - ejecutar [npm](https://www.npmjs.com/) dentro del entorno virtual [nodeenv](https://pypi.python.org/pypi/nodeenv) del proyecto actual
+- `odoo-helper exec my-command` - ejecutar comando dentro del entorno virtual del proyecto

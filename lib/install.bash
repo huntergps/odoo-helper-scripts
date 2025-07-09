@@ -599,9 +599,24 @@ function install_system_prerequirements {
     with_sudo apt-get update -qq || true;
 
     echoe -e "${BLUEC}Installing system preprequirements...${NC}";
+    
+    # Detectar versión de Ubuntu para usar los paquetes correctos
+    local ubuntu_version;
+    ubuntu_version=$(lsb_release -rs);
+    
+    local python_dev_package;
+    # Verificar si es Ubuntu 22.04 o superior
+    if [ "$(echo "$ubuntu_version" | cut -d. -f1)" -ge 22 ]; then
+        # Ubuntu 22.04+ usa python3-dev en lugar de python-dev
+        python_dev_package="python3-dev";
+    else
+        # Versiones anteriores pueden usar python-dev
+        python_dev_package="python-dev";
+    fi
+    
     install_sys_deps_internal git wget lsb-release \
         procps libevent-dev g++ libpq-dev libsass-dev \
-        python-dev python3-dev libjpeg-dev libyaml-dev \
+        "$python_dev_package" libjpeg-dev libyaml-dev \
         libfreetype6-dev zlib1g-dev libxml2-dev libxslt-dev bzip2 \
         libsasl2-dev libldap2-dev libssl-dev libffi-dev fontconfig;
 
@@ -1112,7 +1127,7 @@ function install_entry_point {
         case $key in
             pre-requirements)
                 shift
-                install_system_prerequirements "$@";
+                install_pre_requirements "$@";
                 return 0;
             ;;
             sys-deps)

@@ -1,3 +1,3 @@
-# Documentation
+# Documentación
 
-Look for documentation [here](https://katyukha.gitlab.io/odoo-helper-scripts/)
+Busca la documentación [aquí](https://katyukha.gitlab.io/odoo-helper-scripts/)

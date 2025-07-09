@@ -1,166 +1,166 @@
-# Installation of odoo-helper-scripts
+# Instalación de odoo-helper-scripts
 
-Installation of *odoo-helper-scripts* consists of three steps:
+La instalación de *odoo-helper-scripts* consiste en tres pasos:
 
-1. Install *odoo-helper-scripts*
-2. Install system dependencies for *odoo-helper-scripts*
-3. Install dependencies for specific *Odoo* version
+1. Instalar *odoo-helper-scripts*
+2. Instalar dependencias del sistema para *odoo-helper-scripts*
+3. Instalar dependencias para la versión específica de *Odoo*
 
-Second step is separated, because installing system dependencies on different
-different platforms may differ and automatic installation of system dependencies
-only supported on debian-like systems (using apt)
+El segundo paso está separado, porque instalar dependencias del sistema en diferentes
+plataformas puede diferir y la instalación automática de dependencias del sistema
+solo está soportada en sistemas tipo debian (usando apt)
 
 
-## Installing odoo-helper-scripts itself
-There are three options to install *odoo-helper-scripts*:
+## Instalando odoo-helper-scripts en sí
+Hay tres opciones para instalar *odoo-helper-scripts*:
 
-- [*user-space* installation](#user-space-installation)
-- [*system-wide* installation](#system-wide-installation)
-- [*as .deb package* (**experimental**)](#install-as-deb-package)
+- [instalación *espacio de usuario*](#instalación-espacio-de-usuario)
+- [instalación *a nivel del sistema*](#instalación-a-nivel-del-sistema)
+- [*como paquete .deb* (**experimental**)](#instalar-como-paquete-deb)
 
-### User-space installation
+### Instalación espacio de usuario
 
 ```bash
 wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash | bash -s
 ```
 
-or in more explicit way:
+o de forma más explícita:
 
 ```bash
 wget -O odoo-helper-install-user.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash
 bash odoo-helper-install-user.bash
 ```
 
-After instalation you will have ``odoo-helper-scripts`` directory inside your home directory
-And ``$HOME/odoo-helper.conf`` file will be generated with path to odoo-helper-scripts install dir.
-*odoo-helper-scripts* executables will be placed in ``$HOME/bin/`` directory.
-If this directory does not exists at installation time, then it will be created.
+Después de la instalación tendrás el directorio ``odoo-helper-scripts`` dentro de tu directorio home
+Y se generará el archivo ``$HOME/odoo-helper.conf`` con la ruta al directorio de instalación de odoo-helper-scripts.
+Los ejecutables de *odoo-helper-scripts* se colocarán en el directorio ``$HOME/bin/``.
+Si este directorio no existe al momento de la instalación, entonces se creará.
 
-#### Known bugs and workarounds for user-space installation
+#### Bugs conocidos y soluciones para instalación espacio de usuario
 
-1. *command not found `odoo-helper`* after installation. Ususaly this happens, because there is
-   no `$HOME/bin` directory or it is not in `$PATH` before installation.
-   After installation this directory will be created, but additional steps may be required to add it to `$PATH`
-    - restart shell session (for example open new terminal window or tab).
-      This may help if shell is configured to use `$HOME/bin` directory if it is exists.
-    - if *bash* is used as shell, then it may be enough to source `.profile` file (`$ source $HOME/.profile`)
-    - add `$HOME/bin` directory to `$PATH` in your shell start-up configration ([Stack Exchange Question](https://unix.stackexchange.com/questions/381228/home-bin-dir-is-not-on-the-path))
+1. *comando no encontrado `odoo-helper`* después de la instalación. Usualmente esto sucede, porque no hay
+   directorio `$HOME/bin` o no está en `$PATH` antes de la instalación.
+   Después de la instalación este directorio se creará, pero pueden requerirse pasos adicionales para agregarlo a `$PATH`
+    - reiniciar sesión de shell (por ejemplo abrir nueva ventana o pestaña de terminal).
+      Esto puede ayudar si el shell está configurado para usar el directorio `$HOME/bin` si existe.
+    - si se usa *bash* como shell, entonces puede ser suficiente hacer source del archivo `.profile` (`$ source $HOME/.profile`)
+    - agregar directorio `$HOME/bin` a `$PATH` en tu configuración de inicio de shell ([Pregunta de Stack Exchange](https://unix.stackexchange.com/questions/381228/home-bin-dir-is-not-on-the-path))
 
-### System-wide installation
+### Instalación a nivel del sistema
 
-To install (system-wide) just do folowing:
+Para instalar (a nivel del sistema) solo haz lo siguiente:
 
 ```bash
-# Install odoo-helper-scripts
+# Instalar odoo-helper-scripts
 wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 ```
 
-or more explicit way:
+o de forma más explícita:
 
 ```bash
-# Download installation script
+# Descargar script de instalación
 wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
 
-# Install odoo-helper-scripts
+# Instalar odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;
 ```
 
-After instalation *odoo-helper-scripts* code will be placed in ``/opt/odoo-helper-scripts`` directory.
-``odoo-helper.conf`` file that containse global odoo-helper configuration will be placed inside ``/etc/`` directory
-*odoo-helper-scripts* executables will be placed in ``/usr/local/bin`` directory.
+Después de la instalación el código de *odoo-helper-scripts* se colocará en el directorio ``/opt/odoo-helper-scripts``.
+El archivo ``odoo-helper.conf`` que contiene la configuración global de odoo-helper se colocará dentro del directorio ``/etc/``
+Los ejecutables de *odoo-helper-scripts* se colocarán en el directorio ``/usr/local/bin``.
 
-### Install as .deb package
+### Instalar como paquete .deb
 
-***Note***: this feature is experimental!
+***Nota***: ¡esta característica es experimental!
 
-Since release *0.1.7-alpha* it is possible to install *odoo-helper-scripts* as *.deb* package.
+Desde el lanzamiento *0.1.7-alpha* es posible instalar *odoo-helper-scripts* como paquete *.deb*.
 
-Look for a link on [releases page](https://gitlab.com/katyukha/odoo-helper-scripts/tags)
+Busca un enlace en la [página de releases](https://gitlab.com/katyukha/odoo-helper-scripts/tags)
 
 
-## Install system dependencies for odoo-helper-scripts
+## Instalar dependencias del sistema para odoo-helper-scripts
 
-On this step system dependencies have to be installed.
-This could be done automaticaly for *debian-based* systems:
+En este paso se deben instalar las dependencias del sistema.
+Esto se puede hacer automáticamente para sistemas *basados en debian*:
 
 ```bash
 odoo-helper install pre-requirements
 ```
 
-On other operation systems it may require to install system dependencies manualy
-For example following command will isntall system dependencies for [OpenSUSE](https://www.opensuse.org/) linux
+En otros sistemas operativos puede requerir instalar dependencias del sistema manualmente
+Por ejemplo el siguiente comando instalará dependencias del sistema para [OpenSUSE](https://www.opensuse.org/) linux
 
 ```bash
 zypper install git wget python-setuptools gcc postgresql-devel python-devel expect-devel libevent-devel libjpeg-devel libfreetype6-devel zlib-devel libxml2-devel libxslt-devel cyrus-sasl-devel openldap2-devel libssl43 libffi-devel
 ```
 
-Also, *PostgreSQL* is usualy required for local development.
-For *debian-based* systems odoo-helper could be used:
+También, *PostgreSQL* es usualmente requerido para desarrollo local.
+Para sistemas *basados en debian* se puede usar odoo-helper:
 
 ```bash
 odoo-helper install postgres
 ```
 
-Postgres user for odoo may be created at same time
+El usuario postgres para odoo puede crearse al mismo tiempo
 
 ```bash
 odoo-helper install postgres odoo_user odoo_password
 ```
 
-*Note: it is recommended to create new postgres user for each Odoo instance*
+*Nota: se recomienda crear nuevo usuario postgres para cada instancia de Odoo*
 
-For other systems it have to be installed manualy
+Para otros sistemas debe instalarse manualmente
 
 
-## Install Odoo system dependencies
+## Instalar dependencias del sistema de Odoo
 
-To make Odoo work, some system dependencies fpecific for version may be required.
-Most of python dependencies are installed in virtualenv, thus no need for sudo access.
-But some non-python system libraries may be required.
+Para hacer que Odoo funcione, pueden requerirse algunas dependencias del sistema específicas para la versión.
+La mayoría de dependencias python se instalan en virtualenv, así que no se necesita acceso sudo.
+Pero algunas librerías del sistema no-python pueden ser requeridas.
 
-For this reason for *debian-based* systems exists one more odoo-helper command
+Por esta razón para sistemas *basados en debian* existe un comando más de odoo-helper
 
 ```bash
 #odoo-helper install sys-deps <odoo-version>
 odoo-helper install sys-deps 11.0
 ```
 
-For other systems such depencies have to be installed manualy
+Para otros sistemas tales dependencias deben instalarse manualmente
 
 
-## Installation of development version
+## Instalación de versión de desarrollo
 
-Installation scripts could reciev *reference* argument.  This could be branch name, tag name or commit hash.
-So to install *development* version system-wide run following command:
+Los scripts de instalación pueden recibir argumento de *referencia*. Esto puede ser nombre de rama, nombre de tag o hash de commit.
+Así que para instalar versión de *desarrollo* a nivel del sistema ejecuta el siguiente comando:
 
 ```bash
-# Install odoo-helper-scripts  (note '- dev' in the end of command)
+# Instalar odoo-helper-scripts  (nota '- dev' al final del comando)
 wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s - dev
 
-#  Intall system pre-requirements for odoo-helper-scripts
+#  Instalar pre-requisitos del sistema para odoo-helper-scripts
 odoo-helper install pre-requirements
 ```
 
-For user-space install:
+Para instalación espacio de usuario:
 
 ```bash
 wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash | bash -s - dev
 
-#  Intall system pre-requirements for odoo-helper-scripts
-#  NOTE: works only on debian-based systems
+#  Instalar pre-requisitos del sistema para odoo-helper-scripts
+#  NOTA: solo funciona en sistemas basados en debian
 odoo-helper install pre-requirements
 ```
 
-## Update odoo-helper-scripts
+## Actualizar odoo-helper-scripts
 
-If you installed old version of odoo-helper scripts and want to update them to new version,
-then following command will help you:
+Si instalaste versión antigua de odoo-helper scripts y quieres actualizarlos a nueva versión,
+entonces el siguiente comando te ayudará:
 
 ```bash
 odoo-helper system update
 ```
 
-For example to update to last *dev* commit following command could be used:
+Por ejemplo para actualizar al último commit de *dev* se puede usar el siguiente comando:
 
 ```
 odoo-helper system update dev
