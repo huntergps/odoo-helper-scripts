@@ -8,7 +8,7 @@
 
 if [ -z "$ODOO_HELPER_LIB" ]; then
     echo "Odoo-helper-scripts seems not been installed correctly.";
-    echo "Reinstall it (see Readme on https://gitlab.com/katyukha/odoo-helper-scripts/)";
+    echo "Reinstall it (see Readme on https://github.com/huntergps/odoo-helper-scripts/)";
     exit 1;
 fi
 
@@ -826,7 +826,8 @@ function install_js_tools {
         shift
     done
     local deps=( eslint stylelint stylelint-config-standard );
-    if [ "$(odoo_get_major_version)" -lt 12 ]; then
+    local major_version=$(odoo_get_major_version);
+    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -lt 12 ]; then
         deps+=( phantomjs-prebuilt );
     fi
     exec_npm install -g "${deps[@]}";

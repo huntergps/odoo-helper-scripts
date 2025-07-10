@@ -1,8 +1,8 @@
 # Colección de scripts auxiliares de Odoo
 
-| Master        | [![pipeline status](https://gitlab.com/katyukha/odoo-helper-scripts/badges/master/pipeline.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/commits/master) |  [![coverage report](https://gitlab.com/katyukha/odoo-helper-scripts/badges/master/coverage.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/commits/master)| [![CHANGELOG](https://img.shields.io/badge/CHANGELOG-master-brightgreen.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/blob/master/CHANGELOG.md)              |
+| Master        | [![pipeline status](https://github.com/huntergps/odoo-helper-scripts/badges/master/pipeline.svg)](https://github.com/huntergps/odoo-helper-scripts/commits/master) |  [![coverage report](https://github.com/huntergps/odoo-helper-scripts/badges/master/coverage.svg)](https://github.com/huntergps/odoo-helper-scripts/commits/master)| [![CHANGELOG](https://img.shields.io/badge/CHANGELOG-master-brightgreen.svg)](https://github.com/huntergps/odoo-helper-scripts/blob/master/CHANGELOG.md)              |
 | ------------- |:---------------|:--------------|:------------|
-| Dev           | [![pipeline status](https://gitlab.com/katyukha/odoo-helper-scripts/badges/dev/pipeline.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/commits/dev) | [![coverage report](https://gitlab.com/katyukha/odoo-helper-scripts/badges/dev/coverage.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/commits/dev) | [![CHANGELOG](https://img.shields.io/badge/CHANGELOG-dev-yellow.svg)](https://gitlab.com/katyukha/odoo-helper-scripts/blob/dev/CHANGELOG.md) |
+| Dev           | [![pipeline status](https://github.com/huntergps/odoo-helper-scripts/badges/dev/pipeline.svg)](https://github.com/huntergps/odoo-helper-scripts/commits/dev) | [![coverage report](https://github.com/huntergps/odoo-helper-scripts/badges/dev/coverage.svg)](https://github.com/huntergps/odoo-helper-scripts/commits/dev) | [![CHANGELOG](https://img.shields.io/badge/CHANGELOG-dev-yellow.svg)](https://github.com/huntergps/odoo-helper-scripts/blob/dev/CHANGELOG.md) |
 
 ## Descripción general
 
@@ -10,7 +10,7 @@ Este proyecto tiene como objetivo simplificar el proceso de desarrollo de comple
 
 ## Fuente canónica
 
-La fuente canónica de odoo-helper-scripts está alojada en [GitLab](https://gitlab.com/katyukha/odoo-helper-scripts).
+La fuente canónica de odoo-helper-scripts está alojada en [GitLab](https://github.com/huntergps/odoo-helper-scripts).
 
 ## Características
 
@@ -67,7 +67,7 @@ La fuente canónica de odoo-helper-scripts está alojada en [GitLab](https://git
     - En *Ubuntu* debería funcionar bien
     - También debería funcionar en sistemas basados en *Debian*, pero pueden ocurrir algunos problemas con la instalación de dependencias del sistema.
     - Otros sistemas linux - en la mayoría de casos debería funcionar, pero las dependencias del sistema deben instalarse manualmente.
-- ¿Falta alguna característica? [Llena un issue](https://gitlab.com/katyukha/odoo-helper-scripts/issues/new)
+- ¿Falta alguna característica? [Llena un issue](https://github.com/huntergps/odoo-helper-scripts/issues/new)
 
 
 ## Documentación
@@ -96,13 +96,13 @@ También echa un vistazo al proyecto [Yodoo Cockpit](https://crnd.pro/yodoo-cock
 Para la lista completa de opciones de instalación mira la [documentación de instalación](https://katyukha.gitlab.io/odoo-helper-scripts/installation/)
 
 *A partir de la versión 0.1.7 odoo-helper-scripts se puede instalar como* [paquetes .deb](https://katyukha.gitlab.io/odoo-helper-scripts/installation#install-as-deb-package)*,
-pero esta característica sigue siendo experimental. Ve la página de* [releases](https://gitlab.com/katyukha/odoo-helper-scripts/tags) *.*
+pero esta característica sigue siendo experimental. Ve la página de* [releases](https://github.com/huntergps/odoo-helper-scripts/tags) *.*
 
 Para instalar *odoo-helper-scripts* a nivel del sistema haz lo siguiente:
 
 ```bash
 # Instalar odoo-helper-scripts
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 
 # Instalar dependencias del sistema requeridas para odoo-helper-scripts
 # NOTA: Solo funciona en sistemas basados en debian
@@ -116,7 +116,7 @@ o de forma más explícita:
 
 ```bash
 # Descargar script de instalación
-wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
+wget -O /tmp/odoo-helper-install.bash https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash;
 
 # Instalar odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;
@@ -167,4 +167,4 @@ También mira las [pruebas de odoo-helper-scripts](./tests/test.bash) para obten
 
 ## Soporte
 
-¿Tienes alguna pregunta? Solo [llena un issue](https://gitlab.com/katyukha/odoo-helper-scripts/issues/new) o [envía email](mailto:incoming+katyukha/odoo-helper-scripts@incoming.gitlab.com)
+¿Tienes alguna pregunta? Solo [llena un issue](https://github.com/huntergps/odoo-helper-scripts/issues/new) o [envía email](mailto:incoming+katyukha/odoo-helper-scripts@incoming.gitlab.com)

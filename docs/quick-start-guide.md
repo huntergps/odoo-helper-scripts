@@ -9,14 +9,14 @@ Para lista completa de opciones de instalación mira la [documentación de insta
 Para instalar *odoo-helper-scripts* a nivel del sistema haz lo siguiente:
 
 ```bash
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 ```
 
 o de forma más explícita:
 
 ```bash
 # Descargar script de instalación
-wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
+wget -O /tmp/odoo-helper-install.bash https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash;
 
 # Instalar odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;

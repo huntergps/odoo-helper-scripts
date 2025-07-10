@@ -8,7 +8,7 @@
 
 if [ -z "$ODOO_HELPER_LIB" ]; then
     echo "Odoo-helper-scripts seems not been installed correctly.";
-    echo "Reinstall it (see Readme on https://gitlab.com/katyukha/odoo-helper-scripts/)";
+    echo "Reinstall it (see Readme on https://github.com/huntergps/odoo-helper-scripts/)";
     exit 1;
 fi
 
@@ -150,21 +150,36 @@ function odoo_update_sources {
 
 # Echo major odoo version (10, 11, ...)
 function odoo_get_major_version {
-    echo "${ODOO_VERSION%.*}";
+    # Handle SaaS versions like saas-18.3
+    if [[ "$ODOO_VERSION" == saas-* ]]; then
+        # Extract the version number from saas-18.3 -> 18
+        echo "${ODOO_VERSION#saas-}" | cut -d. -f1;
+    else
+        echo "${ODOO_VERSION%.*}";
+    fi
 }
 
 # Get python version number - only 2 or 3
 function odoo_get_python_version_number {
-    if [ -n "$ODOO_VERSION" ] && [ "$(odoo_get_major_version)" -ge 11 ]; then
-        echo "3";
-    elif [ -n "$ODOO_VERSION" ] && [ "$(odoo_get_major_version)" -lt 11 ]; then
-        echo "2";
+    if [ -n "$ODOO_VERSION" ]; then
+        local major_version=$(odoo_get_major_version);
+        # Check if major_version is a valid number
+        if [[ "$major_version" =~ ^[0-9]+$ ]]; then
+            if [ "$major_version" -ge 11 ]; then
+                echo "3";
+            elif [ "$major_version" -lt 11 ]; then
+                echo "2";
+            fi
+        else
+            # For SaaS versions or unknown formats, default to Python 3
+            echo "3";
+        fi
     fi
 }
 
 # Get python interpreter name to run odoo with
 # Returns one of: python2, python3, python
-# Default: python
+# Default: python3 (for modern systems)
 function odoo_get_python_version {
     local py_version;
     py_version=$(odoo_get_python_version_number);
@@ -172,7 +187,14 @@ function odoo_get_python_version {
         echo "python${py_version}";
     else
         echoe -e "${YELLOWC}WARNING${NC}: odoo version not specified, using default python executable";
-        echo "python";
+        # Try python3 first, then python, then python2
+        if command -v python3 >/dev/null 2>&1; then
+            echo "python3";
+        elif command -v python >/dev/null 2>&1; then
+            echo "python";
+        else
+            echo "python3";
+        fi
     fi
 }
 
@@ -326,7 +348,9 @@ function odoo_recompute_menu {
 
 function odoo_shell {
     local odoo_shell_opts=( );
-    if [ "$(odoo_get_major_version)" -gt 10 ]; then
+    local major_version=$(odoo_get_major_version);
+    # Check if major_version is a valid number
+    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -gt 10 ]; then
         odoo_shell_opts+=( "--no-http" );
     else
         odoo_shell_opts+=( "--no-xmlrpc" );

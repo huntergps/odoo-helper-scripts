@@ -4,7 +4,7 @@
 
 ## Contribuyendo a este proyecto
 
-1. Haz fork del repositorio en [GitHub](https://github.com/katyukha/odoo-helper-scripts) o [GitLab](https://gitlab.com/katyukha/odoo-helper-scripts/)
+1. Haz fork del repositorio en [GitHub](https://github.com/katyukha/odoo-helper-scripts) o [GitLab](https://github.com/huntergps/odoo-helper-scripts/)
 2. Crea una nueva rama, ej., `git checkout -b bug-12345` basada en la rama `dev`
 3. Arregla el bug o agrega la característica
 4. Agrega o modifica el mensaje de ayuda relacionado (si es necesario)

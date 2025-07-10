@@ -21,13 +21,13 @@ Hay tres opciones para instalar *odoo-helper-scripts*:
 ### Instalación espacio de usuario
 
 ```bash
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash | bash -s
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-user.bash | bash -s
 ```
 
 o de forma más explícita:
 
 ```bash
-wget -O odoo-helper-install-user.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash
+wget -O odoo-helper-install-user.bash https://github.com/huntergps/odoo-helper-scripts/raw/master/install-user.bash
 bash odoo-helper-install-user.bash
 ```
 
@@ -52,14 +52,14 @@ Para instalar (a nivel del sistema) solo haz lo siguiente:
 
 ```bash
 # Instalar odoo-helper-scripts
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 ```
 
 o de forma más explícita:
 
 ```bash
 # Descargar script de instalación
-wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
+wget -O /tmp/odoo-helper-install.bash https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash;
 
 # Instalar odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;
@@ -75,7 +75,7 @@ Los ejecutables de *odoo-helper-scripts* se colocarán en el directorio ``/usr/l
 
 Desde el lanzamiento *0.1.7-alpha* es posible instalar *odoo-helper-scripts* como paquete *.deb*.
 
-Busca un enlace en la [página de releases](https://gitlab.com/katyukha/odoo-helper-scripts/tags)
+Busca un enlace en la [página de releases](https://github.com/huntergps/odoo-helper-scripts/tags)
 
 
 ## Instalar dependencias del sistema para odoo-helper-scripts
@@ -135,7 +135,7 @@ Así que para instalar versión de *desarrollo* a nivel del sistema ejecuta el s
 
 ```bash
 # Instalar odoo-helper-scripts  (nota '- dev' al final del comando)
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s - dev
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s - dev
 
 #  Instalar pre-requisitos del sistema para odoo-helper-scripts
 odoo-helper install pre-requirements
@@ -144,7 +144,7 @@ odoo-helper install pre-requirements
 Para instalación espacio de usuario:
 
 ```bash
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-user.bash | bash -s - dev
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-user.bash | bash -s - dev
 
 #  Instalar pre-requisitos del sistema para odoo-helper-scripts
 #  NOTA: solo funciona en sistemas basados en debian

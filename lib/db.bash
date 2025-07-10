@@ -8,7 +8,7 @@
 
 if [ -z "$ODOO_HELPER_LIB" ]; then
     echo "Odoo-helper-scripts seems not been installed correctly.";
-    echo "Reinstall it (see Readme on https://gitlab.com/katyukha/odoo-helper-scripts/)";
+    echo "Reinstall it (see Readme on https://github.com/huntergps/odoo-helper-scripts/)";
     exit 1;
 fi
 
@@ -123,7 +123,8 @@ function odoo_db_create {
 
     local python_cmd="import lodoo; cl=lodoo.LocalClient(['-c', '$conf_file']);";
     python_cmd="$python_cmd kwargs={'user_password': '$db_user_password'};"
-    if [ "$(odoo_get_major_version)" -gt 8 ] && [ -n "$db_country" ]; then
+    local major_version=$(odoo_get_major_version);
+    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -gt 8 ] && [ -n "$db_country" ]; then
         python_cmd="$python_cmd kwargs['country_code'] = '$db_country';";
     fi
     python_cmd="$python_cmd cl.db.create_database('$db_name', $demo_data, '$db_lang', **kwargs);"

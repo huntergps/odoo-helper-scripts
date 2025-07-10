@@ -8,7 +8,7 @@
 
 if [ -z "$ODOO_HELPER_LIB" ]; then
     echo "Odoo-helper-scripts seems not been installed correctly.";
-    echo "Reinstall it (see Readme on https://gitlab.com/katyukha/odoo-helper-scripts/)";
+    echo "Reinstall it (see Readme on https://github.com/huntergps/odoo-helper-scripts/)";
     exit 1;
 fi
 
@@ -179,7 +179,8 @@ function scaffold_addon {
     local addon_path=$addon_dest/$addon_name;
 
     # Choose correct manifest filename for Odoo version
-    if [[ "$(odoo_get_major_version)" -lt 10 ]]; then
+    local major_version=$(odoo_get_major_version);
+    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -lt 10 ]; then
         local manifest_name="__openerp__.py";
     else
         local manifest_name="__manifest__.py";

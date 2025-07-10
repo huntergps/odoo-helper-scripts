@@ -68,7 +68,7 @@ This project aims to simplify development process of Odoo addons as much as poss
     - On *Ubuntu* should work nice
     - Also should work on *Debian* based systems, but some troubles may happen with installation of system dependencies.
     - Other linux systems - in most cases should work, but system dependecies must be installed manualy.
-- Missed feature? [Fill an issue](https://gitlab.com/katyukha/odoo-helper-scripts/issues/new)
+- Missed feature? [Fill an issue](https://github.com/huntergps/odoo-helper-scripts/issues/new)
 
 
 ## Usage note
@@ -88,13 +88,13 @@ For full list of installation options look at [installation documentation](./ins
 or [Quick Start Guide](./quick-start-guide.md)
 
 *Starting from 0.1.7-alpha release odoo-helper-scripts could be installed as* [.deb packages](https://katyukha.gitlab.io/odoo-helper-scripts/installation#install-as-deb-package)*,
-but this feature is still in alpha. See* [releases](https://gitlab.com/katyukha/odoo-helper-scripts/releases) *page.*
+but this feature is still in alpha. See* [releases](https://github.com/huntergps/odoo-helper-scripts/releases) *page.*
 
 To install *odoo-helper-scripts* system-wide do folowing:
 
 ```bash
 # Install odoo-helper-scripts
-wget -O - https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
+wget -O - https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash | sudo bash -s
 
 # Install system dependencies required for odoo-helper-scripts
 # NOTE: Works only on debian-based systems
@@ -105,7 +105,7 @@ or more explicit way:
 
 ```bash
 # Download installation script
-wget -O /tmp/odoo-helper-install.bash https://gitlab.com/katyukha/odoo-helper-scripts/raw/master/install-system.bash;
+wget -O /tmp/odoo-helper-install.bash https://github.com/huntergps/odoo-helper-scripts/raw/master/install-system.bash;
 
 # Install odoo-helper-scripts
 sudo bash /tmp/odoo-helper-install.bash;
@@ -169,4 +169,4 @@ or just run `odoo-helper --help`
 
 ## Support
 
-Have you any quetions? Just [fill an issue](https://gitlab.com/katyukha/odoo-helper-scripts/issues/new) or [send email](mailto:incoming+katyukha/odoo-helper-scripts@incoming.gitlab.com)
+Have you any quetions? Just [fill an issue](https://github.com/huntergps/odoo-helper-scripts/issues/new) or [send email](mailto:incoming+katyukha/odoo-helper-scripts@incoming.gitlab.com)
