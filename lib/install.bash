@@ -632,7 +632,16 @@ function install_odoo_py_requirements_for_version {
     done
 
     local odoo_version=${1:-$ODOO_VERSION};
-    local odoo_major_version="${odoo_version%.*}";
+    local odoo_major_version;
+    # Extraer versión numérica correctamente
+    if [[ "$odoo_version" == saas-* ]]; then
+        # Para versiones SaaS como saas-18.1, saas-18.2, saas-18.3
+        odoo_major_version="${odoo_version#saas-}";
+        odoo_major_version="${odoo_major_version%.*}";
+    else
+        # Para versiones estándar como 17.0, 18.0
+        odoo_major_version="${odoo_version%.*}";
+    fi
     odoo_branch=${odoo_branch:-$odoo_version};
     
     # Validar versión de Odoo antes de instalar dependencias Python
