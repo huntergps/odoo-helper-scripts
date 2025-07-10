@@ -171,9 +171,12 @@ function odoo_get_python_version_number {
                 echo "2";
             fi
         else
-            # For SaaS versions or unknown formats, default to Python 3
+            # For SaaS versions (saas-18.3, etc.) or unknown formats, always use Python 3
             echo "3";
         fi
+    else
+        # If no ODOO_VERSION specified, default to Python 3 for modern systems
+        echo "3";
     fi
 }
 
@@ -187,14 +190,8 @@ function odoo_get_python_version {
         echo "python${py_version}";
     else
         echoe -e "${YELLOWC}WARNING${NC}: odoo version not specified, using default python executable";
-        # Try python3 first, then python, then python2
-        if command -v python3 >/dev/null 2>&1; then
-            echo "python3";
-        elif command -v python >/dev/null 2>&1; then
-            echo "python";
-        else
-            echo "python3";
-        fi
+        # Always prefer python3 for modern systems
+        echo "python3";
     fi
 }
 

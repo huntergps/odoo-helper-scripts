@@ -140,7 +140,9 @@ function ci_git_get_addon_version_by_ref {
     if [ -z "$manifest_content" ]; then
         version="${ODOO_VERSION}.0.0.0";
     else
-        version=$(echo "$manifest_content" | execv python -c "\"import sys; print(eval(sys.stdin.read()).get('version', '${ODOO_VERSION}.1.0.0'))\"");
+        local python_cmd;
+        python_cmd=$(odoo_get_python_version);
+        version=$(echo "$manifest_content" | execv $python_cmd -c "\"import sys; print(eval(sys.stdin.read()).get('version', '${ODOO_VERSION}.1.0.0'))\"");
         # shellcheck disable=SC2181
         if [ "$?" -ne 0 ]; then
             [ -z "$quiet" ] && echoe -e "${YELLOWC}WARNING${NC} Cannot read version from manifest in first revision! Using ${BLUEC}${ODOO_VERSION}.0.0.0${NC} as default.";

@@ -119,7 +119,9 @@ function odoo_helper_show_project_tools_versions {
     local node_version;
     local npm_version;
     local lessc_version;
-    python_version="${BLUEC}$(execv python --version 2>&1)${NC}";
+    local python_cmd;
+    python_cmd=$(odoo_get_python_version);
+    python_version="${BLUEC}$(execv $python_cmd --version 2>&1)${NC}";
     node_version="${BLUEC}$(execv node --version 2>&1)${NC}";
     npm_version="${BLUEC}$(execv npm --version 2>&1)${NC}";
     lessc_version="${BLUEC}$(execv lessc --version 2>&1)${NC}";
