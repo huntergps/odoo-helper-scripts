@@ -1264,8 +1264,33 @@ function install_generate_odoo_conf {
 }
 
 
-# odoo_run_setup_py
+# odoo_run_setup_py [--production]
+# Instala Odoo usando pip install
+# Argumentos:
+#   --production: usar 'pip install .' (modo producción, no editable)
+#   (sin args):   usar 'pip install -e .' (modo desarrollo, editable por defecto)
 function odoo_run_setup_py {
+    local install_mode="editable";
+    local pip_args="-e .";
+    local mode_description="modo editable (desarrollo)";
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --production)
+                install_mode="production";
+                pip_args=".";
+                mode_description="modo producción (no editable)";
+                shift;
+            ;;
+            *)
+                echoe -e "${REDC}ERROR${NC}: Argumento desconocido: $1";
+                echoe -e "${BLUEC}Uso${NC}: odoo_run_setup_py [--production]";
+                return 1;
+            ;;
+        esac
+    done
+    
     # Install dependencies via pip (it is faster if they are cached)
     echoe -e "${BLUEC}Instalando dependencias Python desde requirements.txt...${NC}";
     if ! install_odoo_py_requirements_for_version; then
@@ -1274,28 +1299,40 @@ function odoo_run_setup_py {
         return 1;
     fi
 
-    # Install odoo using modern pip install -e . (replaces deprecated setup.py develop)
-    echoe -e "${BLUEC}Instalando Odoo en modo desarrollo (pip install -e .)...${NC}";
-    if ! (cd "$ODOO_PATH" && exec_pip install -e .); then
-        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con pip install -e.";
-        echoe -e "${YELLOWC}Intentando método alternativo con setup.py como fallback...${NC}";
-        
-        # Fallback to setup.py develop if pip install -e fails
-        if ! (cd "$ODOO_PATH" && exec_py setup.py -q develop); then
-            echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló también el método fallback con setup.py.";
-            echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
-            return 1;
-        fi
-        echoe -e "${YELLOWC}⚠${NC} Odoo instalado con setup.py (método legacy)";
-    else
-        echoe -e "${GREENC}✓${NC} Odoo instalado correctamente con pip install -e (método moderno)";
+    # Install odoo using pip install (editable or production mode)
+    echoe -e "${BLUEC}Instalando Odoo en ${mode_description} (pip install ${pip_args})...${NC}";
+    if ! (cd "$ODOO_PATH" && exec_pip install $pip_args); then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con pip install ${pip_args}.";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+        return 1;
     fi
+    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente en ${mode_description}";
 }
 
 
 # Install odoo intself.
 # Require that odoo is downloaded and directory tree structure created
+# Argumentos:
+#   --production: instalar Odoo en modo producción (no editable)
+#   (sin args):   instalar Odoo en modo desarrollo (editable por defecto)
 function install_odoo_install {
+    local install_args="";
+    
+    # Parse arguments for production mode
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --production)
+                install_args="--production";
+                shift;
+            ;;
+            *)
+                echoe -e "${REDC}ERROR${NC}: Argumento desconocido: $1";
+                echoe -e "${BLUEC}Uso${NC}: install_odoo_install [--production]";
+                return 1;
+            ;;
+        esac
+    done
+    
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
     echoe -e "${BLUEC}                    INSTALANDO ODOO 18.3                    ${NC}";
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
@@ -1334,7 +1371,7 @@ function install_odoo_install {
 
     # Run setup.py
     echoe -e "${BLUEC}[4/4] Instalando Odoo...${NC}";
-    if ! odoo_run_setup_py; then
+    if ! odoo_run_setup_py $install_args; then
         echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo.";
         echoe -e "${REDC}ABORTANDO INSTALACIÓN COMPLETA${NC}";
         return 1;
@@ -1484,6 +1521,8 @@ function install_entry_point {
                                                            Options are:
                                                               - clone odoo as git repository
                                                               - download odoo archieve and unpack source
+        $SCRIPT_NAME install odoo [--production]         - install odoo (default: editable mode)
+                                                           --production: install in production mode (non-editable)
         $SCRIPT_NAME install reinstall-odoo [--help]     - completly reinstall odoo
                                                            (downlload or clone new sources, create new virtualenv, etc).
                                                            Options are:
@@ -1562,6 +1601,12 @@ function install_entry_point {
                 shift;
                 config_load_project;
                 install_fetch_odoo "$@";
+                return 0;
+            ;;
+            odoo)
+                shift;
+                config_load_project;
+                install_odoo_install "$@";
                 return 0;
             ;;
             reinstall-venv)
