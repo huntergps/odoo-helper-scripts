@@ -1264,15 +1264,17 @@ function install_generate_odoo_conf {
 }
 
 
-# odoo_run_setup_py [--production]
-# Instala Odoo usando pip install
+# odoo_run_setup_py [--production|--skip-install]
+# Instala dependencias Python y opcionalmente Odoo
 # Argumentos:
-#   --production: usar 'pip install .' (modo producción, no editable)
-#   (sin args):   usar 'pip install -e .' (modo desarrollo, editable por defecto)
+#   --production:   usar 'pip install .' (modo producción, no editable)
+#   --skip-install: solo instalar dependencias, NO instalar Odoo
+#   (sin args):     usar 'pip install -e .' (modo desarrollo, editable por defecto)
 function odoo_run_setup_py {
     local install_mode="editable";
     local pip_args="-e .";
     local mode_description="modo editable (desarrollo)";
+    local skip_odoo_install=false;
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -1283,9 +1285,13 @@ function odoo_run_setup_py {
                 mode_description="modo producción (no editable)";
                 shift;
             ;;
+            --skip-install)
+                skip_odoo_install=true;
+                shift;
+            ;;
             *)
                 echoe -e "${REDC}ERROR${NC}: Argumento desconocido: $1";
-                echoe -e "${BLUEC}Uso${NC}: odoo_run_setup_py [--production]";
+                echoe -e "${BLUEC}Uso${NC}: odoo_run_setup_py [--production|--skip-install]";
                 return 1;
             ;;
         esac
@@ -1295,39 +1301,49 @@ function odoo_run_setup_py {
     echoe -e "${BLUEC}Instalando dependencias Python desde requirements.txt...${NC}";
     if ! install_odoo_py_requirements_for_version; then
         echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de dependencias Python.";
-        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN${NC}";
         return 1;
     fi
 
-    # Install odoo using pip install (editable or production mode)
-    echoe -e "${BLUEC}Instalando Odoo en ${mode_description} (pip install ${pip_args})...${NC}";
-    if ! (cd "$ODOO_PATH" && exec_pip install $pip_args); then
-        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con pip install ${pip_args}.";
-        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
-        return 1;
+    # Install odoo using pip install (optional)
+    if [ "$skip_odoo_install" = true ]; then
+        echoe -e "${YELLOWC}⚠${NC} Instalación de Odoo omitida (--skip-install)";
+        echoe -e "${GREENC}✓${NC} Solo dependencias Python instaladas";
+    else
+        echoe -e "${BLUEC}Instalando Odoo en ${mode_description} (pip install ${pip_args})...${NC}";
+        if ! (cd "$ODOO_PATH" && exec_pip install $pip_args); then
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con pip install ${pip_args}.";
+            echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+            return 1;
+        fi
+        echoe -e "${GREENC}✓${NC} Odoo instalado correctamente en ${mode_description}";
     fi
-    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente en ${mode_description}";
 }
 
 
 # Install odoo intself.
 # Require that odoo is downloaded and directory tree structure created
 # Argumentos:
-#   --production: instalar Odoo en modo producción (no editable)
-#   (sin args):   instalar Odoo en modo desarrollo (editable por defecto)
+#   --production:   instalar Odoo en modo producción (no editable)
+#   --skip-install: solo instalar dependencias, NO instalar Odoo
+#   (sin args):     instalar Odoo en modo desarrollo (editable por defecto)
 function install_odoo_install {
     local install_args="";
     
-    # Parse arguments for production mode
+    # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --production)
                 install_args="--production";
                 shift;
             ;;
+            --skip-install)
+                install_args="--skip-install";
+                shift;
+            ;;
             *)
                 echoe -e "${REDC}ERROR${NC}: Argumento desconocido: $1";
-                echoe -e "${BLUEC}Uso${NC}: install_odoo_install [--production]";
+                echoe -e "${BLUEC}Uso${NC}: install_odoo_install [--production|--skip-install]";
                 return 1;
             ;;
         esac
@@ -1370,13 +1386,27 @@ function install_odoo_install {
     echoe -e "${GREENC}✓${NC} Dependencias de JavaScript instaladas";
 
     # Run setup.py
-    echoe -e "${BLUEC}[4/4] Instalando Odoo...${NC}";
+    if [[ "$install_args" == "--skip-install" ]]; then
+        echoe -e "${BLUEC}[4/4] Instalando solo dependencias Python (omitiendo Odoo)...${NC}";
+    else
+        echoe -e "${BLUEC}[4/4] Instalando Odoo...${NC}";
+    fi
+    
     if ! odoo_run_setup_py $install_args; then
-        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo.";
+        if [[ "$install_args" == "--skip-install" ]]; then
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de dependencias.";
+        else
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo.";
+        fi
         echoe -e "${REDC}ABORTANDO INSTALACIÓN COMPLETA${NC}";
         return 1;
     fi
-    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente";
+    
+    if [[ "$install_args" == "--skip-install" ]]; then
+        echoe -e "${GREENC}✓${NC} Dependencias instaladas correctamente (Odoo omitido)";
+    else
+        echoe -e "${GREENC}✓${NC} Odoo instalado correctamente";
+    fi
     
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
     echoe -e "${GREENC}                    INSTALACIÓN COMPLETADA                    ${NC}";
@@ -1521,8 +1551,10 @@ function install_entry_point {
                                                            Options are:
                                                               - clone odoo as git repository
                                                               - download odoo archieve and unpack source
-        $SCRIPT_NAME install odoo [--production]         - install odoo (default: editable mode)
+        $SCRIPT_NAME install odoo [options]              - install odoo dependencies and optionally odoo itself
+                                                           (default: editable mode)
                                                            --production: install in production mode (non-editable)
+                                                           --skip-install: only install dependencies, skip odoo installation
         $SCRIPT_NAME install reinstall-odoo [--help]     - completly reinstall odoo
                                                            (downlload or clone new sources, create new virtualenv, etc).
                                                            Options are:
