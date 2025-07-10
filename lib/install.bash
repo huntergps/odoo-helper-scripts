@@ -679,8 +679,8 @@ function install_odoo_py_requirements_for_version {
                     # Python 3.8-3.9 support for Odoo 17+
                     echo "gevent==22.10.2";
                 elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 17-18
-                    echo "gevent==21.8.0";
+                    # Python 3.10 support for Odoo 17-18 (actualizado para compatibilidad con Cython moderno)
+                    echo "gevent==22.10.2";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
                     # Python 3.11 support for Odoo 17-18
                     echo "gevent==22.10.2";
@@ -697,8 +697,8 @@ function install_odoo_py_requirements_for_version {
                     # Python 3.8-3.9 support for Odoo 17+
                     echo "greenlet==1.1.2";
                 elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 17-18
-                    echo "greenlet==1.1.2";
+                    # Python 3.10 support for Odoo 17-18 (actualizado para compatibilidad con gevent 22.10.2)
+                    echo "greenlet==2.0.2";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
                     # Python 3.11 support for Odoo 17-18
                     echo "greenlet==2.0.2";
