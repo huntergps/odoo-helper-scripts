@@ -25,11 +25,64 @@ ohelper_require "odoo";
 set -e; # fail on errors
 
 DEFAULT_ODOO_REPO="https://github.com/odoo/odoo.git";
+MINIMUM_SUPPORTED_VERSION=17.0
+
+# Validar versión de Odoo - Solo 17+ permitido
+function validate_odoo_version {
+    local version=$1;
+    
+    if [ -z "$version" ]; then
+        echoe -e "${REDC}ERROR${NC}: Versión de Odoo no especificada";
+        return 1;
+    fi
+    
+    # Extraer versión numérica
+    local numeric_version;
+    if [[ "$version" == saas-* ]]; then
+        # Para versiones SaaS como saas-18.1, saas-18.2, saas-18.3
+        numeric_version="${version#saas-}";
+    else
+        # Para versiones estándar como 17.0, 18.0
+        numeric_version="$version";
+    fi
+    
+    # Convertir a formato comparable (17.0 -> 1700, 18.3 -> 1830)
+    local major;
+    local minor;
+    if [[ "$numeric_version" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}";
+        minor="${BASH_REMATCH[2]}";
+    elif [[ "$numeric_version" =~ ^([0-9]+)$ ]]; then
+        major="$numeric_version";
+        minor="0";
+    else
+        echoe -e "${REDC}ERROR${NC}: Formato de versión inválido: $version";
+        echoe -e "${YELLOWC}Versiones soportadas: 17.0, 18.0, saas-18.1, saas-18.2, saas-18.3, etc.${NC}";
+        return 1;
+    fi
+    
+    local version_number=$((major * 100 + minor));
+    local min_version_number=1700; # 17.0
+    
+    if [ "$version_number" -lt "$min_version_number" ]; then
+        echoe -e "${REDC}ERROR${NC}: Versión de Odoo ${YELLOWC}$version${NC} no soportada.";
+        echoe -e "${YELLOWC}Odoo-helper-scripts solo soporta Odoo 17.0 o superior.${NC}";
+        echoe -e "${BLUEC}Razones:${NC}";
+        echoe -e "  • Python 3.8+ requerido";
+        echoe -e "  • Arquitectura moderna de Odoo";
+        echoe -e "  • Dependencias actualizadas";
+        echoe -e "  • Mejor compatibilidad y rendimiento";
+        echoe -e "${YELLOWC}Versiones soportadas: 17.0, 18.0, saas-18.1, saas-18.2, saas-18.3${NC}";
+        return 1;
+    fi
+    
+    return 0;
+}
 
 # Set-up defaul values for environment variables
 function install_preconfigure_env {
     ODOO_REPO=${ODOO_REPO:-$DEFAULT_ODOO_REPO};
-    ODOO_VERSION=${ODOO_VERSION:-18.3};
+    ODOO_VERSION=${ODOO_VERSION:-saas-18.3};
     ODOO_BRANCH=${ODOO_BRANCH:-$ODOO_VERSION};
     DOWNLOAD_ARCHIVE=${ODOO_DOWNLOAD_ARCHIVE:-${DOWNLOAD_ARCHIVE:-on}};
     CLONE_SINGLE_BRANCH=${CLONE_SINGLE_BRANCH:-on};
@@ -37,6 +90,12 @@ function install_preconfigure_env {
     DB_PASSWORD=${DB_PASSWORD:-${ODOO_DBPASSWORD:-odoo}};
     DB_HOST=${DB_HOST:-${ODOO_DBHOST:-localhost}};
     DB_PORT=${DB_PORT:-${ODOO_DBPORT:-5432}};
+    
+    # Validar versión de Odoo al configurar entorno
+    if ! validate_odoo_version "$ODOO_VERSION"; then
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN${NC}: Versión de Odoo no soportada";
+        return 1;
+    fi
 }
 
 # create directory tree for project
@@ -336,7 +395,7 @@ function install_wkhtmltopdf {
         
         # Limpiar archivo descargado
         rm "$wkhtmltox_path" || true;
-        
+
         echoe -e "${GREENC}OK${NC}:${YELLOWC}wkhtmltopdf${NC} installed successfully!";
     else
         echoe -e "${GREENC}OK${NC}:${YELLOWC}wkhtmltopdf${NC} seems to be installed!";
@@ -479,6 +538,7 @@ function install_parse_debian_control_file {
 function install_sys_deps_for_odoo_version {
     local usage="
     Install system dependencies for specific Odoo version.
+    Only Odoo 17.0+ is supported.
 
     Usage:
 
@@ -519,6 +579,11 @@ function install_sys_deps_for_odoo_version {
         echoe -e "${REDC}ERROR${NC}: Odoo version is not specified!";
         return 1;
     fi
+    
+    # Validar versión antes de instalar dependencias
+    if ! validate_odoo_version "$odoo_version"; then
+        return 1;
+    fi
 
     odoo_branch=${odoo_branch:-$odoo_version};
     local control_url="https://raw.githubusercontent.com/odoo/odoo/$odoo_branch/debian/control";
@@ -532,7 +597,7 @@ function install_sys_deps_for_odoo_version {
 }
 
 # install python requirements for specified odoo version via PIP requirements.txt
-# This function uses version-specific dependencies based on Odoo 18.3 requirements.txt
+# This function uses version-specific dependencies based on Odoo saas-18.3 requirements.txt
 function install_odoo_py_requirements_for_version {
     local usage="
     Install python dependencies for specific Odoo version.
@@ -569,6 +634,12 @@ function install_odoo_py_requirements_for_version {
     local odoo_version=${1:-$ODOO_VERSION};
     local odoo_major_version="${odoo_version%.*}";
     odoo_branch=${odoo_branch:-$odoo_version};
+    
+    # Validar versión de Odoo antes de instalar dependencias Python
+    if ! validate_odoo_version "$odoo_version"; then
+        return 1;
+    fi
+    
     local requirements_url="https://raw.githubusercontent.com/odoo/odoo/$odoo_branch/requirements.txt";
     
     # Mostrar información sobre la versión de Python que se está usando
@@ -592,96 +663,83 @@ function install_odoo_py_requirements_for_version {
                 # Skip this dependency for modern Odoo versions
                 echoe -e "${YELLOWC}WARNING${NC}: Skipping pychart dependency (not compatible with Python 3)";
                 continue;
-            elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ gevent* ]]; then
-                # Install last gevent, because old gevent versions (ex. 1.0.2)
-                # cause build errors.
-                # Instead last gevent (1.1.0+) have already prebuild wheels.
-                # Note that gevent (1.3.1) may break odoo 10.0, 11.0
-                # and in Odoo 10.0, 11.0 working version of gevent is placed in requirements
-                echo "gevent==1.1.0";
-            elif [ "$odoo_major_version" -gt 10 ] && [[ "$dependency_stripped" =~ gevent* ]]; then
-                # Starting from Odoo 11 python 3 is used. choose correct gevent version
-                # for python installed in system based on Odoo 18.3 requirements.txt
-                if exec_py -c "\"import sys; assert (3, 4) <= sys.version_info < (3, 6);\"" > /dev/null 2>&1; then
-                    # Gevent have no builds for python3.6+
-                    echo "gevent==1.1.2";
-                elif exec_py -c "\"import sys; assert (3, 4) <= sys.version_info < (3, 8);\"" > /dev/null 2>&1; then
-                    echo "gevent==1.3.4";
-                elif exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 10);\"" > /dev/null 2>&1; then
-                    # Python 3.8-3.9 support
+
+            elif [ "$odoo_major_version" -ge 17 ] && [[ "$dependency_stripped" =~ gevent* ]]; then
+                # Odoo 17+ con Python 3.8+ - usar versiones específicas basadas en requirements.txt
+                if exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 10);\"" > /dev/null 2>&1; then
+                    # Python 3.8-3.9 support for Odoo 17+
                     echo "gevent==22.10.2";
                 elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 18.3
+                    # Python 3.10 support for Odoo 17-18
                     echo "gevent==21.8.0";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
-                    # Python 3.11 support for Odoo 18.3
+                    # Python 3.11 support for Odoo 17-18
                     echo "gevent==22.10.2";
                 elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
-                    # Python 3.12+ support for Odoo 18.3
+                    # Python 3.12+ support for Odoo 18+
                     echo "gevent==24.2.1";
                 else
                     # Default for newer Python versions
                     echo "gevent==24.2.1";
                 fi
-            elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
-                echo "greenlet==0.4.9";
-            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
-                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
-                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 18.3
+            elif [ "$odoo_major_version" -ge 17 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
+                # Para Odoo 17+ con Python 3.8+, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 10);\"" > /dev/null 2>&1; then
+                    # Python 3.8-3.9 support for Odoo 17+
+                    echo "greenlet==1.1.2";
+                elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 17-18
                     echo "greenlet==1.1.2";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
-                    # Python 3.11 support for Odoo 18.3
+                    # Python 3.11 support for Odoo 17-18
                     echo "greenlet==2.0.2";
                 elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
-                    # Python 3.12+ support for Odoo 18.3
+                    # Python 3.12+ support for Odoo 18+
                     echo "greenlet==3.0.3";
                 else
                     # Default for newer Python versions
                     echo "greenlet==3.0.3";
                 fi
-            elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ psycopg2* ]]; then
-                echo "psycopg2==2.7.3.1";
-            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ psycopg2* ]]; then
-                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
-                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 18.3
+            elif [ "$odoo_major_version" -ge 17 ] && [[ "$dependency_stripped" =~ psycopg2* ]]; then
+                # Para Odoo 17+ con Python 3.8+, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 10);\"" > /dev/null 2>&1; then
+                    # Python 3.8-3.9 support for Odoo 17+
+                    echo "psycopg2==2.9.2";
+                elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 17-18
                     echo "psycopg2==2.9.2";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
-                    # Python 3.11 support for Odoo 18.3
+                    # Python 3.11 support for Odoo 17-18
                     echo "psycopg2==2.9.5";
                 elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
-                    # Python 3.12+ support for Odoo 18.3
+                    # Python 3.12+ support for Odoo 18+
                     echo "psycopg2==2.9.9";
                 else
                     # Default for newer Python versions
                     echo "psycopg2==2.9.9";
                 fi
-            elif [ "$odoo_major_version" -lt 11 ] && [[ "$dependency_stripped" =~ lxml ]]; then
-                echo "lxml==3.7.1";
-            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ lxml ]]; then
-                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
-                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.10 support for Odoo 18.3
-                    echo "lxml==4.8.0";
+            elif [ "$odoo_major_version" -ge 17 ] && [[ "$dependency_stripped" =~ lxml ]]; then
+                # Para Odoo 17+ con Python 3.8+, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    echo "lxml==4.9.1";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
-                    # Python 3.11 support for Odoo 18.3
-                    echo "lxml==4.9.3";
+                    echo "lxml==4.9.1";
                 elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
-                    # Python 3.12+ support for Odoo 18.3
-                    echo "lxml==5.2.1";
+                    echo "lxml==5.2.2";
                 else
                     # Default for newer Python versions
-                    echo "lxml==5.2.1";
+                    echo "lxml==5.2.2";
                 fi
-            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ cryptography ]]; then
-                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
-                if exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
-                    # Python 3.12+ support for Odoo 18.3
-                    echo "cryptography==42.0.8";
+            elif [ "$odoo_major_version" -ge 17 ] && [[ "$dependency_stripped" =~ cryptography ]]; then
+                # Para Odoo 17+ con Python 3.8+, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    echo "cryptography==41.0.7";
+                elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
+                    echo "cryptography==41.0.7";
+                elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    echo "cryptography==42.0.4";
                 else
-                    # Default for older Python versions
-                    echo "cryptography==3.4.8";
+                    echo "cryptography==42.0.4";
                 fi
             else
                 # Echo dependency line unchanged to rmp file

@@ -16,7 +16,7 @@ if [ -z "$ODOO_HELPER_COMMON_IMPORTED" ]; then
     source "$ODOO_HELPER_LIB/common.bash";
 fi
 
-#ohelper_require 'install';
+ohelper_require 'install';
 ohelper_require 'server';
 #ohelper_require 'fetch';
 ohelper_require 'git';
@@ -178,13 +178,14 @@ function scaffold_addon {
 
     local addon_path=$addon_dest/$addon_name;
 
-    # Choose correct manifest filename for Odoo version
-    local major_version=$(odoo_get_major_version);
-    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -lt 10 ]; then
-        local manifest_name="__openerp__.py";
-    else
-        local manifest_name="__manifest__.py";
+    # Validar versión de Odoo (solo 17+)
+    if ! validate_odoo_version "$ODOO_VERSION"; then
+        echoe -e "${REDC}ERROR${NC}: No se puede crear addons para versiones de Odoo < 17.0";
+        return 1;
     fi
+    
+    # Solo usamos __manifest__.py para Odoo 17+ (siempre Python 3)
+    local manifest_name="__manifest__.py";
 
     # Copy odoo addon skeleton
     cp -r "$TMPL_ADDON" "$addon_path"; 

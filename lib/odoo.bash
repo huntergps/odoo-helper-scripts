@@ -159,40 +159,17 @@ function odoo_get_major_version {
     fi
 }
 
-# Get python version number - only 2 or 3
+# Get python version number - only 3 (since we only support Odoo 17+)
 function odoo_get_python_version_number {
-    if [ -n "$ODOO_VERSION" ]; then
-        local major_version=$(odoo_get_major_version);
-        # Check if major_version is a valid number
-        if [[ "$major_version" =~ ^[0-9]+$ ]]; then
-            if [ "$major_version" -ge 11 ]; then
-                echo "3";
-            elif [ "$major_version" -lt 11 ]; then
-                echo "2";
-            fi
-        else
-            # For SaaS versions (saas-18.3, etc.) or unknown formats, always use Python 3
-            echo "3";
-        fi
-    else
-        # If no ODOO_VERSION specified, default to Python 3 for modern systems
-        echo "3";
-    fi
+    # Solo soportamos Odoo 17+ que requiere Python 3
+    echo "3";
 }
 
 # Get python interpreter name to run odoo with
-# Returns one of: python2, python3, python
-# Default: python3 (for modern systems)
+# Returns: python3 (since we only support Odoo 17+ with Python 3)
 function odoo_get_python_version {
-    local py_version;
-    py_version=$(odoo_get_python_version_number);
-    if [ -n "$py_version" ]; then
-        echo "python${py_version}";
-    else
-        echoe -e "${YELLOWC}WARNING${NC}: odoo version not specified, using default python executable";
-        # Always prefer python3 for modern systems
-        echo "python3";
-    fi
+    # Solo soportamos Odoo 17+ que requiere Python 3
+    echo "python3";
 }
 
 # Get python interpreter (full path to executable) to run odoo with

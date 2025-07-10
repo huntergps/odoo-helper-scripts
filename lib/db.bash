@@ -124,7 +124,8 @@ function odoo_db_create {
     local python_cmd="import lodoo; cl=lodoo.LocalClient(['-c', '$conf_file']);";
     python_cmd="$python_cmd kwargs={'user_password': '$db_user_password'};"
     local major_version=$(odoo_get_major_version);
-    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -gt 8 ] && [ -n "$db_country" ]; then
+    # Para Odoo 17+ siempre soportamos country_code 
+    if [[ "$major_version" =~ ^[0-9]+$ ]] && [ "$major_version" -ge 17 ] && [ -n "$db_country" ]; then
         python_cmd="$python_cmd kwargs['country_code'] = '$db_country';";
     fi
     python_cmd="$python_cmd cl.db.create_database('$db_name', $demo_data, '$db_lang', **kwargs);"
