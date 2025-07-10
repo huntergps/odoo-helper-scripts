@@ -66,9 +66,23 @@ function install_clone_odoo {
         git_opt+=( --single-branch );
     fi
 
-    git clone -q "${git_opt[@]}" \
+    echoe -e "${BLUEC}Clonando repositorio Odoo desde ${YELLOWC}${ODOO_REPO:-$DEFAULT_ODOO_REPO}${NC}";
+    echoe -e "${BLUEC}Rama: ${YELLOWC}${ODOO_BRANCH:-master}${NC}";
+    echoe -e "${BLUEC}Directorio destino: ${YELLOWC}${ODOO_PATH}${NC}";
+    
+    # Mostrar progreso con git clone
+    if ! git clone --progress "${git_opt[@]}" \
         "${ODOO_REPO:-$DEFAULT_ODOO_REPO}" \
-        "$ODOO_PATH";
+        "$ODOO_PATH" 2>&1 | while read -r line; do
+        if [[ "$line" == *"Receiving objects"* ]] || [[ "$line" == *"Resolving deltas"* ]]; then
+            echoe -e "${BLUEC}${line}${NC}";
+        fi
+    done; then
+        echoe -e "${REDC}ERROR${NC}: Fallo al clonar el repositorio Odoo";
+        return 1;
+    fi
+    
+    echoe -e "${GREENC}✓${NC} Repositorio Odoo clonado exitosamente";
 }
 
 # install_download_odoo
@@ -84,23 +98,41 @@ function install_download_odoo {
         local repo=${clone_odoo_repo%.git};
         local repo_base;
         repo_base=$(basename "$repo");
-        echov -e "${LBLUEC}Downloading from ${YELLOWC}${repo}/archive/${ODOO_BRANCH}.tar.gz${NC}";
-        if ! wget -q -T 15 -O "$odoo_archive" "$repo/archive/$ODOO_BRANCH.tar.gz"; then
-            echoe -e "${REDC}ERROR${NC}: Cannot download Odoo from ${YELLOWC}${repo}/archive/${ODOO_BRANCH}.tar.gz}${NC}."
-            echoe -e "Remove broken download (if it is exists) ${YELLOWC}${odoo_archive}${NC}."
-            echoe -e "and try to run command below: ";
-            echoe -e "    ${BLUEC}wget --debug -T 15 -O \"$odoo_archive\" \"$repo/archive/$ODOO_BRANCH.tar.gz\"${NC}"
-            echoe  -e "and analyze its output";
+        
+        echoe -e "${BLUEC}Descargando Odoo desde ${YELLOWC}${repo}/archive/${ODOO_BRANCH}.tar.gz${NC}";
+        echoe -e "${BLUEC}Archivo temporal: ${YELLOWC}${odoo_archive}${NC}";
+        
+        # Descargar con barra de progreso
+        if ! wget --progress=bar:force:noscroll -T 30 -O "$odoo_archive" "$repo/archive/$ODOO_BRANCH.tar.gz" 2>&1 | while read -r line; do
+            if [[ "$line" == *"%"* ]]; then
+                echoe -e "${BLUEC}${line}${NC}";
+            fi
+        done; then
+            echoe -e "${REDC}ERROR${NC}: No se pudo descargar Odoo desde ${YELLOWC}${repo}/archive/${ODOO_BRANCH}.tar.gz${NC}.";
+            echoe -e "Elimina la descarga rota (si existe) ${YELLOWC}${odoo_archive}${NC}.";
+            echoe -e "e intenta ejecutar el comando de abajo: ";
+            echoe -e "    ${BLUEC}wget --debug -T 30 -O \"$odoo_archive\" \"$repo/archive/$ODOO_BRANCH.tar.gz\"${NC}";
+            echoe -e "y analiza su salida";
             return 2;
         fi
+        
+        echoe -e "${GREENC}✓${NC} Descarga completada";
+        echoe -e "${BLUEC}Extrayendo archivo...${NC}";
+        
         if ! tar -zxf "$odoo_archive"; then
-            echoe -e "${REDC}ERROR${NC}: Cannot unpack downloaded archive ${YELLOWC}${odoo_archive}${NC}."
+            echoe -e "${REDC}ERROR${NC}: No se pudo extraer el archivo descargado ${YELLOWC}${odoo_archive}${NC}.";
             return 3;
         fi
+        
+        echoe -e "${GREENC}✓${NC} Archivo extraído";
+        echoe -e "${BLUEC}Moviendo a directorio destino...${NC}";
+        
         mv "${repo_base}-${ODOO_BRANCH}" "$ODOO_PATH";
         rm "$odoo_archive";
+        
+        echoe -e "${GREENC}✓${NC} Odoo instalado en ${YELLOWC}${ODOO_PATH}${NC}";
     else
-        echoe -e "${REDC}ERROR${NC}: Cannot download Odoo. Download option supported only for github repositories!";
+        echoe -e "${REDC}ERROR${NC}: No se puede descargar Odoo. La opción de descarga solo es compatible con repositorios de GitHub!";
         return 1;
     fi
 }
@@ -968,21 +1000,33 @@ function odoo_run_setup_py {
 # Install odoo intself.
 # Require that odoo is downloaded and directory tree structure created
 function install_odoo_install {
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+    echoe -e "${BLUEC}                    INSTALANDO ODOO 18.3                    ${NC}";
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+    
     # Install virtual environment
-    echoe -e "${BLUEC}Installing virtualenv...${NC}";
+    echoe -e "${BLUEC}[1/4] Instalando entorno virtual...${NC}";
     install_virtual_env;
+    echoe -e "${GREENC}✓${NC} Entorno virtual instalado";
 
     # Install python requirements
-    echoe -e "${BLUEC}Installing python pre-requirements...${NC}";
+    echoe -e "${BLUEC}[2/4] Instalando dependencias de Python...${NC}";
     install_python_prerequirements;
+    echoe -e "${GREENC}✓${NC} Dependencias de Python instaladas";
 
     # Install js requirements
-    echoe -e "${BLUEC}Installing js pre-requirements...${NC}";
+    echoe -e "${BLUEC}[3/4] Instalando dependencias de JavaScript...${NC}";
     install_js_prerequirements;
+    echoe -e "${GREENC}✓${NC} Dependencias de JavaScript instaladas";
 
     # Run setup.py
-    echoe -e "${BLUEC}Installing odoo...${NC}";
+    echoe -e "${BLUEC}[4/4] Instalando Odoo...${NC}";
     odoo_run_setup_py;  # imported from 'install' module
+    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente";
+    
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+    echoe -e "${GREENC}                    INSTALACIÓN COMPLETADA                    ${NC}";
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
 }
 
 
