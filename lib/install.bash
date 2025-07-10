@@ -56,6 +56,23 @@ function install_create_project_dir_tree {
 
 # install_clone_odoo [path [branch [repo]]]
 function install_clone_odoo {
+    # Verificar si el directorio ya existe
+    if [ -d "$ODOO_PATH" ]; then
+        echoe -e "${YELLOWC}El directorio ${BLUEC}${ODOO_PATH}${YELLOWC} ya existe.${NC}";
+        echoe -e "${BLUEC}Verificando si es un repositorio Git válido...${NC}";
+        
+        # Verificar si es un repositorio Git válido
+        if [ -d "$ODOO_PATH/.git" ]; then
+            echoe -e "${GREENC}✓${NC} Repositorio Git encontrado. Saltando descarga...";
+            echoe -e "${BLUEC}Para forzar una nueva descarga, elimina el directorio: ${YELLOWC}rm -rf $ODOO_PATH${NC}";
+            return 0;
+        else
+            echoe -e "${YELLOWC}El directorio existe pero no es un repositorio Git válido.${NC}";
+            echoe -e "${BLUEC}Eliminando directorio existente...${NC}";
+            rm -rf "$ODOO_PATH";
+        fi
+    fi
+
     local git_opt=( );
 
     if [ -n "$ODOO_BRANCH" ]; then
@@ -87,6 +104,14 @@ function install_clone_odoo {
 
 # install_download_odoo
 function install_download_odoo {
+    # Verificar si el directorio ya existe
+    if [ -d "$ODOO_PATH" ]; then
+        echoe -e "${YELLOWC}El directorio ${BLUEC}${ODOO_PATH}${YELLOWC} ya existe.${NC}";
+        echoe -e "${GREENC}✓${NC} Saltando descarga...";
+        echoe -e "${BLUEC}Para forzar una nueva descarga, elimina el directorio: ${YELLOWC}rm -rf $ODOO_PATH${NC}";
+        return 0;
+    fi
+
     local clone_odoo_repo=${ODOO_REPO:-$DEFAULT_ODOO_REPO};
 
     local odoo_archive=/tmp/odoo.$ODOO_BRANCH.tar.gz
@@ -140,7 +165,59 @@ function install_download_odoo {
 
 # fetch odoo source code clone|download
 function install_fetch_odoo {
-    local odoo_action=$1;
+    local usage="
+    Fetch Odoo source code from repository.
+
+    Usage:
+
+        $SCRIPT_NAME install fetch-odoo <action> [options] - fetch odoo source
+        $SCRIPT_NAME install fetch-odoo --help            - show this help message
+
+    <action> could be:
+        clone     - clone Odoo as git repository (recommended)
+        download  - download Odoo from archive
+
+    Options:
+        --force   - force re-download even if directory exists
+    ";
+
+    local odoo_action;
+    local force_download;
+    
+    while [[ $# -gt 0 ]]
+    do
+        local key="$1";
+        case $key in
+            clone|download)
+                odoo_action="$1";
+            ;;
+            --force)
+                force_download=1;
+            ;;
+            -h|--help|help)
+                echo "$usage";
+                return 0;
+            ;;
+            *)
+                echo -e "${REDC}ERROR${NC}: Unknown option $key";
+                return 1;
+            ;;
+        esac
+        shift
+    done
+
+    if [ -z "$odoo_action" ]; then
+        echo -e "${REDC}ERROR${NC}: Please specify action (clone or download)!";
+        echo "";
+        echo "$usage";
+        return 1;
+    fi
+
+    # Si se fuerza la descarga, eliminar el directorio existente
+    if [ -n "$force_download" ] && [ -d "$ODOO_PATH" ]; then
+        echoe -e "${YELLOWC}Forzando re-descarga. Eliminando directorio existente...${NC}";
+        rm -rf "$ODOO_PATH";
+    fi
 
     if [ "$odoo_action" == 'clone' ]; then
         install_clone_odoo;
@@ -455,6 +532,7 @@ function install_sys_deps_for_odoo_version {
 }
 
 # install python requirements for specified odoo version via PIP requirements.txt
+# This function uses version-specific dependencies based on Odoo 18.3 requirements.txt
 function install_odoo_py_requirements_for_version {
     local usage="
     Install python dependencies for specific Odoo version.
@@ -492,6 +570,11 @@ function install_odoo_py_requirements_for_version {
     local odoo_major_version="${odoo_version%.*}";
     odoo_branch=${odoo_branch:-$odoo_version};
     local requirements_url="https://raw.githubusercontent.com/odoo/odoo/$odoo_branch/requirements.txt";
+    
+    # Mostrar información sobre la versión de Python que se está usando
+    local python_version_info;
+    python_version_info=$(exec_py -c "\"import sys; print(f'Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')\"");
+    echoe -e "${BLUEC}Instalando dependencias para ${YELLOWC}${python_version_info}${NC}";
     local tmp_requirements;
     local tmp_requirements_post;
     tmp_requirements=$(mktemp);
@@ -505,8 +588,10 @@ function install_odoo_py_requirements_for_version {
                 # especialy to versions lower than that used by setuptools
                 continue
             elif [[ "$dependency_stripped" =~ pychart* ]]; then
-                # Pychart is not downloadable. Use Python-Chart package
-                echo "Python-Chart";
+                # Pychart is not downloadable and not compatible with Python 3
+                # Skip this dependency for modern Odoo versions
+                echoe -e "${YELLOWC}WARNING${NC}: Skipping pychart dependency (not compatible with Python 3)";
+                continue;
             elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ gevent* ]]; then
                 # Install last gevent, because old gevent versions (ex. 1.0.2)
                 # cause build errors.
@@ -515,29 +600,89 @@ function install_odoo_py_requirements_for_version {
                 # and in Odoo 10.0, 11.0 working version of gevent is placed in requirements
                 echo "gevent==1.1.0";
             elif [ "$odoo_major_version" -gt 10 ] && [[ "$dependency_stripped" =~ gevent* ]]; then
-                # Starting from Odoo 11 python 3 is used. choose correct gevent  version
-                # for python installed in system
+                # Starting from Odoo 11 python 3 is used. choose correct gevent version
+                # for python installed in system based on Odoo 18.3 requirements.txt
                 if exec_py -c "\"import sys; assert (3, 4) <= sys.version_info < (3, 6);\"" > /dev/null 2>&1; then
                     # Gevent have no builds for python3.6+
                     echo "gevent==1.1.2";
                 elif exec_py -c "\"import sys; assert (3, 4) <= sys.version_info < (3, 8);\"" > /dev/null 2>&1; then
                     echo "gevent==1.3.4";
-                elif exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
-                    # Python 3.8-3.10 support
+                elif exec_py -c "\"import sys; assert (3, 8) <= sys.version_info < (3, 10);\"" > /dev/null 2>&1; then
+                    # Python 3.8-3.9 support
                     echo "gevent==22.10.2";
+                elif exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 18.3
+                    echo "gevent==21.8.0";
                 elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
-                    # Python 3.11+ support for Odoo 18.3
-                    echo "gevent==23.9.1";
+                    # Python 3.11 support for Odoo 18.3
+                    echo "gevent==22.10.2";
+                elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    # Python 3.12+ support for Odoo 18.3
+                    echo "gevent==24.2.1";
                 else
-                    # Python 3.12+ support for future Odoo versions
-                    echo "gevent==23.9.1";
+                    # Default for newer Python versions
+                    echo "gevent==24.2.1";
                 fi
             elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
                 echo "greenlet==0.4.9";
+            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ greenlet* ]]; then
+                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 18.3
+                    echo "greenlet==1.1.2";
+                elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
+                    # Python 3.11 support for Odoo 18.3
+                    echo "greenlet==2.0.2";
+                elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    # Python 3.12+ support for Odoo 18.3
+                    echo "greenlet==3.0.3";
+                else
+                    # Default for newer Python versions
+                    echo "greenlet==3.0.3";
+                fi
             elif [ "$odoo_major_version" -lt 10 ] && [[ "$dependency_stripped" =~ psycopg2* ]]; then
                 echo "psycopg2==2.7.3.1";
+            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ psycopg2* ]]; then
+                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 18.3
+                    echo "psycopg2==2.9.2";
+                elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
+                    # Python 3.11 support for Odoo 18.3
+                    echo "psycopg2==2.9.5";
+                elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    # Python 3.12+ support for Odoo 18.3
+                    echo "psycopg2==2.9.9";
+                else
+                    # Default for newer Python versions
+                    echo "psycopg2==2.9.9";
+                fi
             elif [ "$odoo_major_version" -lt 11 ] && [[ "$dependency_stripped" =~ lxml ]]; then
                 echo "lxml==3.7.1";
+            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ lxml ]]; then
+                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 10) <= sys.version_info < (3, 11);\"" > /dev/null 2>&1; then
+                    # Python 3.10 support for Odoo 18.3
+                    echo "lxml==4.8.0";
+                elif exec_py -c "\"import sys; assert (3, 11) <= sys.version_info < (3, 12);\"" > /dev/null 2>&1; then
+                    # Python 3.11 support for Odoo 18.3
+                    echo "lxml==4.9.3";
+                elif exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    # Python 3.12+ support for Odoo 18.3
+                    echo "lxml==5.2.1";
+                else
+                    # Default for newer Python versions
+                    echo "lxml==5.2.1";
+                fi
+            elif [ "$odoo_major_version" -ge 11 ] && [[ "$dependency_stripped" =~ cryptography ]]; then
+                # Para Odoo 11+ con Python 3, usar versiones específicas del requirements.txt
+                if exec_py -c "\"import sys; assert (3, 12) <= sys.version_info < (3, 13);\"" > /dev/null 2>&1; then
+                    # Python 3.12+ support for Odoo 18.3
+                    echo "cryptography==42.0.8";
+                else
+                    # Default for older Python versions
+                    echo "cryptography==3.4.8";
+                fi
             else
                 # Echo dependency line unchanged to rmp file
                 echo "$dependency";
@@ -970,9 +1115,10 @@ function install_python_prerequirements {
     # setuptools, so we do not need to upgrade them
     exec_pip -q install phonenumbers python-slugify setuptools-odoo cffi jinja2;
 
-    if ! run_python_cmd "import pychart" >/dev/null 2>&1 ; then
-        exec_pip -q install Python-Chart;
-    fi
+    # Python-Chart (pychart) es muy antiguo y no es compatible con Python 3
+    # Para Odoo 18.3, no es necesario instalar pychart ya que no se usa
+    # Si se necesita funcionalidad de gráficos, usar alternativas modernas
+    echoe -e "${BLUEC}Nota: Python-Chart (pychart) no se instala por incompatibilidad con Python 3${NC}";
 }
 
 # Install javascript pre-requirements.
@@ -1033,6 +1179,14 @@ function install_odoo_install {
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
     echoe -e "${BLUEC}                    INSTALANDO ODOO 18.3                    ${NC}";
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+    
+    # Verificar si Odoo ya está descargado
+    if [ ! -d "$ODOO_PATH" ]; then
+        echoe -e "${REDC}ERROR${NC}: El directorio de Odoo no existe: ${YELLOWC}${ODOO_PATH}${NC}";
+        echoe -e "${BLUEC}Primero debes descargar Odoo usando:${NC}";
+        echoe -e "${YELLOWC}odoo-helper install fetch-odoo clone${NC}";
+        return 1;
+    fi
     
     # Install virtual environment
     echoe -e "${BLUEC}[1/4] Instalando entorno virtual...${NC}";
@@ -1193,6 +1347,10 @@ function install_entry_point {
         $SCRIPT_NAME install postgres [user] [password]  - [sudo] install postgres.
                                                            and if user/password specified, create it
         $SCRIPT_NAME install reinstall-venv [--help]     - reinstall virtual environment
+        $SCRIPT_NAME install fetch-odoo [--help]         - fetch odoo source code
+                                                           Options are:
+                                                              - clone odoo as git repository
+                                                              - download odoo archieve and unpack source
         $SCRIPT_NAME install reinstall-odoo [--help]     - completly reinstall odoo
                                                            (downlload or clone new sources, create new virtualenv, etc).
                                                            Options are:
@@ -1266,6 +1424,12 @@ function install_entry_point {
                 shift;
                 install_wkhtmltopdf "$@";
                 return
+            ;;
+            fetch-odoo)
+                shift;
+                config_load_project;
+                install_fetch_odoo "$@";
+                return 0;
             ;;
             reinstall-venv)
                 shift;
