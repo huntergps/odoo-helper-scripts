@@ -755,14 +755,33 @@ function install_odoo_py_requirements_for_version {
                 echo "$dependency";
             fi
         done < "$tmp_requirements" > "$tmp_requirements_post";
+        
+        echoe -e "${BLUEC}Instalando dependencias Python para Odoo ${odoo_version}...${NC}";
         if ! exec_pip install -r "$tmp_requirements_post"; then
-            echoe -e "${REDC}ERROR${NC}: Cannot install python dependencies.\n$(cat "$tmp_requirements_post")";
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: No se pudieron instalar las dependencias Python de Odoo.";
+            echoe -e "${YELLOWC}Archivo de dependencias:${NC}";
+            cat "$tmp_requirements_post";
+            echoe -e "${REDC}ABORTANDO INSTALACIÓN${NC}: La instalación no puede continuar sin las dependencias Python.";
+            
+            # Limpiar archivos temporales antes de salir
+            [ -f "$tmp_requirements" ] && rm "$tmp_requirements";
+            [ -f "$tmp_requirements_post" ] && rm "$tmp_requirements_post";
             return 1;
         fi
+        
+        echoe -e "${GREENC}✓${NC} Dependencias Python instaladas exitosamente";
     else
-        echoe -e "${REDC}ERROR${NC}: Cannot fetch python requirements for Odoo.";
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: No se pudo descargar el archivo requirements.txt de Odoo.";
+        echoe -e "${YELLOWC}URL intentada:${NC} $requirements_url";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN${NC}: Sin requirements.txt no se pueden instalar las dependencias.";
+        
+        # Limpiar archivos temporales antes de salir
+        [ -f "$tmp_requirements" ] && rm "$tmp_requirements";
+        [ -f "$tmp_requirements_post" ] && rm "$tmp_requirements_post";
+        return 1;
     fi
 
+    # Limpiar archivos temporales al final
     if [ -f "$tmp_requirements" ]; then
         rm "$tmp_requirements";
     fi
@@ -1180,19 +1199,34 @@ function install_openupgradelib {
 function install_python_prerequirements {
     # virtualenv >= 15.1.0 automaticaly installs last versions of pip and
     # setuptools, so we do not need to upgrade them
-    exec_pip -q install phonenumbers python-slugify setuptools-odoo cffi jinja2;
+    echoe -e "${BLUEC}Instalando paquetes Python básicos...${NC}";
+    if ! exec_pip -q install phonenumbers python-slugify setuptools-odoo cffi jinja2; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: No se pudieron instalar los paquetes Python básicos.";
+        echoe -e "${YELLOWC}Paquetes requeridos:${NC} phonenumbers python-slugify setuptools-odoo cffi jinja2";
+        return 1;
+    fi
 
     # Python-Chart (pychart) es muy antiguo y no es compatible con Python 3
     # Para Odoo 18.3, no es necesario instalar pychart ya que no se usa
     # Si se necesita funcionalidad de gráficos, usar alternativas modernas
     echoe -e "${BLUEC}Nota: Python-Chart (pychart) no se instala por incompatibilidad con Python 3${NC}";
+    
+    echoe -e "${GREENC}✓${NC} Paquetes Python básicos instalados correctamente";
 }
 
 # Install javascript pre-requirements.
 # Now it is less compiler. install if it is not installed yet
 function install_js_prerequirements {
     if ! check_command lessc > /dev/null; then
-        execu npm install -g less@3.9.0;
+        echoe -e "${BLUEC}Instalando compilador LESS...${NC}";
+        if ! execu npm install -g less@3.9.0; then
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: No se pudo instalar el compilador LESS.";
+            echoe -e "${YELLOWC}Comando fallido:${NC} npm install -g less@3.9.0";
+            return 1;
+        fi
+        echoe -e "${GREENC}✓${NC} Compilador LESS instalado correctamente";
+    else
+        echoe -e "${GREENC}✓${NC} Compilador LESS ya está instalado";
     fi
 }
 
@@ -1233,10 +1267,22 @@ function install_generate_odoo_conf {
 # odoo_run_setup_py
 function odoo_run_setup_py {
     # Install dependencies via pip (it is faster if they are cached)
-    install_odoo_py_requirements_for_version;
+    echoe -e "${BLUEC}Instalando dependencias Python desde requirements.txt...${NC}";
+    if ! install_odoo_py_requirements_for_version; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de dependencias Python.";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+        return 1;
+    fi
 
     # Install odoo
-    (cd "$ODOO_PATH" && exec_py setup.py -q develop);
+    echoe -e "${BLUEC}Ejecutando setup.py de Odoo...${NC}";
+    if ! (cd "$ODOO_PATH" && exec_py setup.py -q develop); then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con setup.py.";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+        return 1;
+    fi
+    
+    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente con setup.py";
 }
 
 
@@ -1257,22 +1303,35 @@ function install_odoo_install {
     
     # Install virtual environment
     echoe -e "${BLUEC}[1/4] Instalando entorno virtual...${NC}";
-    install_virtual_env;
+    if ! install_virtual_env; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación del entorno virtual.";
+        return 1;
+    fi
     echoe -e "${GREENC}✓${NC} Entorno virtual instalado";
 
     # Install python requirements
-    echoe -e "${BLUEC}[2/4] Instalando dependencias de Python...${NC}";
-    install_python_prerequirements;
-    echoe -e "${GREENC}✓${NC} Dependencias de Python instaladas";
+    echoe -e "${BLUEC}[2/4] Instalando dependencias de Python básicas...${NC}";
+    if ! install_python_prerequirements; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de dependencias Python básicas.";
+        return 1;
+    fi
+    echoe -e "${GREENC}✓${NC} Dependencias de Python básicas instaladas";
 
     # Install js requirements
     echoe -e "${BLUEC}[3/4] Instalando dependencias de JavaScript...${NC}";
-    install_js_prerequirements;
+    if ! install_js_prerequirements; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de dependencias JavaScript.";
+        return 1;
+    fi
     echoe -e "${GREENC}✓${NC} Dependencias de JavaScript instaladas";
 
     # Run setup.py
     echoe -e "${BLUEC}[4/4] Instalando Odoo...${NC}";
-    odoo_run_setup_py;  # imported from 'install' module
+    if ! odoo_run_setup_py; then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo.";
+        echoe -e "${REDC}ABORTANDO INSTALACIÓN COMPLETA${NC}";
+        return 1;
+    fi
     echoe -e "${GREENC}✓${NC} Odoo instalado correctamente";
     
     echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
