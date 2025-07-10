@@ -673,20 +673,49 @@ function install_system_prerequirements {
 #
 # install_virtual_env
 function install_virtual_env {
-    local venv_script=${ODOO_HELPER_ROOT}/tools/virtualenv/virtualenv.py;
     if [ -n "$VENV_DIR" ] && [ ! -d "$VENV_DIR" ]; then
+        echoe -e "${BLUEC}Instalando entorno virtual...${NC}";
+        
+        # Usar virtualenv moderno desde pip en lugar del script antiguo
         if [ -z "$VIRTUALENV_PYTHON" ]; then
             local venv_python_version;
             venv_python_version=$(odoo_get_python_version);
-            VIRTUALENV_PYTHON="$venv_python_version" "$venv_script" "$VENV_DIR";
+            
+            # Instalar virtualenv moderno si no está disponible
+            if ! command -v virtualenv >/dev/null 2>&1; then
+                echoe -e "${BLUEC}Instalando virtualenv moderno...${NC}";
+                $venv_python_version -m pip install --user virtualenv;
+            fi
+            
+            # Crear entorno virtual con virtualenv moderno
+            $venv_python_version -m virtualenv "$VENV_DIR";
         else
-            VIRTUALENV_PYTHON="$VIRTUALENV_PYTHON" "$venv_script" "$VENV_DIR";
+            # Instalar virtualenv moderno si no está disponible
+            if ! command -v virtualenv >/dev/null 2>&1; then
+                echoe -e "${BLUEC}Instalando virtualenv moderno...${NC}";
+                $VIRTUALENV_PYTHON -m pip install --user virtualenv;
+            fi
+            
+            # Crear entorno virtual con virtualenv moderno
+            $VIRTUALENV_PYTHON -m virtualenv "$VENV_DIR";
         fi
-        exec_pip -q install nodeenv;
-        execv nodeenv --python-virtualenv;  # Install node environment
-
-        exec_npm set user 0;
-        exec_npm set unsafe-perm true;
+        
+        echoe -e "${GREENC}✓${NC} Entorno virtual creado exitosamente";
+        
+        # Activar el entorno virtual para instalar nodeenv
+        source "$VENV_DIR/bin/activate";
+        
+        # Instalar nodeenv en el entorno virtual
+        pip install -q nodeenv;
+        
+        # Instalar entorno de Node.js
+        nodeenv --python-virtualenv;
+        
+        # Configurar npm
+        npm set user 0;
+        npm set unsafe-perm true;
+        
+        echoe -e "${GREENC}✓${NC} Entorno de Node.js instalado";
     fi
 }
 
