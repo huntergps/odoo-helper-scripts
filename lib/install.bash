@@ -1274,15 +1274,22 @@ function odoo_run_setup_py {
         return 1;
     fi
 
-    # Install odoo
-    echoe -e "${BLUEC}Ejecutando setup.py de Odoo...${NC}";
-    if ! (cd "$ODOO_PATH" && exec_py setup.py -q develop); then
-        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con setup.py.";
-        echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
-        return 1;
+    # Install odoo using modern pip install -e . (replaces deprecated setup.py develop)
+    echoe -e "${BLUEC}Instalando Odoo en modo desarrollo (pip install -e .)...${NC}";
+    if ! (cd "$ODOO_PATH" && exec_pip install -e .); then
+        echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló la instalación de Odoo con pip install -e.";
+        echoe -e "${YELLOWC}Intentando método alternativo con setup.py como fallback...${NC}";
+        
+        # Fallback to setup.py develop if pip install -e fails
+        if ! (cd "$ODOO_PATH" && exec_py setup.py -q develop); then
+            echoe -e "${REDC}ERROR CRÍTICO${NC}: Falló también el método fallback con setup.py.";
+            echoe -e "${REDC}ABORTANDO INSTALACIÓN DE ODOO${NC}";
+            return 1;
+        fi
+        echoe -e "${YELLOWC}⚠${NC} Odoo instalado con setup.py (método legacy)";
+    else
+        echoe -e "${GREENC}✓${NC} Odoo instalado correctamente con pip install -e (método moderno)";
     fi
-    
-    echoe -e "${GREENC}✓${NC} Odoo instalado correctamente con setup.py";
 }
 
 
