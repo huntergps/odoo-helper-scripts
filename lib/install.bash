@@ -942,9 +942,9 @@ function install_virtual_env {
         # Instalar entorno de Node.js
         nodeenv --python-virtualenv;
         
-        # Configurar npm
-        npm set user 0;
-        npm set unsafe-perm true;
+        # Configurar npm (comandos modernos)
+        npm config set unsafe-perm true;
+        npm config set user 0;
         
         echoe -e "${GREENC}✓${NC} Entorno de Node.js instalado";
     fi
@@ -1529,8 +1529,97 @@ function install_reinstall_odoo {
     install_reinstall_venv;
 }
 
+#--------------------------------------------------
+# CORRECCIÓN DE DEPENDENCIAS PYTHON PARA ODOO 18.3
+#--------------------------------------------------
+function install_fix_python_dependencies {
+    local usage="
+    Corregir dependencias de Python para Odoo 18.3
 
-# Entry point for install subcommand
+    Usage:
+        $SCRIPT_NAME install fix-python-deps [--help] - corregir dependencias Python
+        $SCRIPT_NAME install fix-python-deps --force  - forzar corrección sin verificación
+    ";
+
+    local force_fix=false;
+    
+    while [[ $# -gt 0 ]]
+    do
+        local key="$1";
+        case $key in
+            --force)
+                force_fix=true;
+            ;;
+            -h|--help|help)
+                echo "$usage";
+                return 0;
+            ;;
+            *)
+                echo -e "${REDC}ERROR${NC}: Opción desconocida $key";
+                return 1;
+            ;;
+        esac
+        shift
+    done
+
+    config_load_project;
+
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+    echoe -e "${BLUEC}           CORRIGIENDO DEPENDENCIAS PYTHON PARA ODOO 18.3        ${NC}";
+    echoe -e "${BLUEC}═══════════════════════════════════════════════════════════════${NC}";
+
+    # Verificar que el entorno virtual existe
+    if [ ! -d "$VENV_DIR" ]; then
+        echoe -e "${REDC}ERROR${NC}: Entorno virtual no encontrado en ${YELLOWC}$VENV_DIR${NC}";
+        echoe -e "${BLUEC}Ejecuta primero: ${YELLOWC}$SCRIPT_NAME install odoo${NC}";
+        return 1;
+    fi
+
+    # Activar entorno virtual
+    echoe -e "${BLUEC}Activando entorno virtual...${NC}";
+    source "$VENV_DIR/bin/activate";
+
+    # Verificar si pyOpenSSL necesita corrección
+    local needs_fix=false;
+    if ! "$VENV_DIR/bin/python3" -c "import OpenSSL; print('pyOpenSSL version:', OpenSSL.__version__)" 2>/dev/null; then
+        needs_fix=true;
+    elif [ "$force_fix" = true ]; then
+        needs_fix=true;
+    fi
+
+    if [ "$needs_fix" = true ]; then
+        echoe -e "${BLUEC}Corrigiendo pyOpenSSL para Python 3.10...${NC}";
+        
+        # Desinstalar pyOpenSSL actual
+        "$VENV_DIR/bin/pip" uninstall -y pyOpenSSL;
+        
+        # Instalar versión compatible
+        if "$VENV_DIR/bin/pip" install pyOpenSSL==21.0.0; then
+            echoe -e "${GREENC}✓${NC} pyOpenSSL corregido exitosamente";
+        else
+            echoe -e "${REDC}✗${NC} Error al corregir pyOpenSSL";
+            return 1;
+        fi
+    else
+        echoe -e "${GREENC}✓${NC} pyOpenSSL ya está correctamente instalado";
+    fi
+
+    # Corregir permisos del entorno virtual
+    echoe -e "${BLUEC}Corrigiendo permisos del entorno virtual...${NC}";
+    sudo chmod -R a+rwX "$VENV_DIR";
+
+    # Verificar que la corrección funcionó
+    if "$VENV_DIR/bin/python3" -c "import OpenSSL; print('pyOpenSSL version:', OpenSSL.__version__)" 2>/dev/null; then
+        echoe -e "${GREENC}✓${NC} Dependencias de Python corregidas exitosamente";
+        echoe -e "${BLUEC}Odoo 18.3 debería funcionar correctamente ahora.${NC}";
+        return 0;
+    else
+        echoe -e "${REDC}✗${NC} Error: Las dependencias no se corrigieron correctamente";
+        return 1;
+    fi
+}
+
+# Actualizar la función install_entry_point para incluir el nuevo comando
 function install_entry_point {
     local usage="
     Install utils, fix installation, etc
@@ -1564,6 +1653,7 @@ function install_entry_point {
                                                            Options are:
                                                               - clone odoo as git repository
                                                               - download odoo archieve and unpack source
+        $SCRIPT_NAME install fix-python-deps [--help]    - corregir dependencias Python para Odoo 18.3
         $SCRIPT_NAME install --help                      - show this help message
 
     ";
@@ -1655,6 +1745,11 @@ function install_entry_point {
                 shift;
                 config_load_project;
                 install_reinstall_odoo "$@";
+                return 0;
+            ;;
+            fix-python-deps)
+                shift;
+                install_fix_python_dependencies "$@";
                 return 0;
             ;;
             postgres)
